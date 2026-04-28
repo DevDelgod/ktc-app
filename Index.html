@@ -25,20 +25,29 @@
     .logo-img { max-height: 90px; }
     body.dark-mode .logo-img { filter: invert(1); }
     .section-title { font-size: 10px; font-weight: bold; color: var(--text-sub); text-transform: uppercase; margin: 0px 0 5px; text-align: left; letter-spacing: 1px; }
-    .form-group { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .form-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    #setup-container { display: flex; flex-direction: column; gap: 12px; }
+    #setup-container input, #setup-container select { width: 100% !important; }
+    #training-container { display: none; flex-direction: column; align-items: center; text-align: center; padding: 15px 0 0; border: 2px dashed #2980b9; border-radius: 18px; margin-top: 10px; }
+    .training-header { display: none; gap: 8px; justify-content: center; align-items: center; background: var(--bg-card); padding: 12px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 10px; font-size: 13px; }
+    .training-header span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 33%; }
+    .btn-start { width: 100%; padding: 15px; background: #2980b9; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; }
     input, select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-size: 14px; }
     .w-45 { width: 48%; }
-    .zoom-controll { margin: 15px 0; background: var(--bg-body); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+    .zoom-controll { margin: 10px 0; background: var(--bg-body); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+    .canvas-container { margin: 5px auto; }
+    .status-banner { display: flex; justify-content: center; padding: 0; }
     #zoomRange { width: 85%; accent-color: #2980b9; }
     .canvas-container {
   border: 2px solid var(--border);
   border-radius: 15px;
   background: white;
   margin: 10px 0;
-  overflow: auto;
+  overflow: hidden;
   touch-action: pan-x pan-y;
-  display: block;
-  min-height: 300px;
+  display: flex;
+  justify-content: center;
+  min-height: 400px;
   max-height: 70vh;
   -webkit-overflow-scrolling: touch;
 }
@@ -47,10 +56,13 @@
   cursor: crosshair;
   display: block;
   margin: 0 auto;
-  touch-action: pan-x pan-y;
+  touch-action: none;
+  width: 100%;
+  max-width: 400px;
+  min-height: 400px;
+  aspect-ratio: 1 / 1;
+  border: 1px solid #2980b9;
 }
-    #alvo {cursor: crosshair; display: block; margin: 0 auto;}
-    #alvo { cursor: crosshair; display: block; margin: 0 auto; }
     .score-display { display: flex; justify-content: center; gap: 5px; margin: 15px 0; }
     .score-box { width: 15%; aspect-ratio: 1; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; background: var(--input-bg); }
     .score-total { font-size: 24px; font-weight: bold; color: #27ae60; margin: 10px 0; }
@@ -67,6 +79,13 @@
     .btn-enviar-alvo { padding: 15px; background: #2980b9; color: white; border: none; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 5px; display:none; }
     .btn-enviar-score { padding: 15px; background: #27ae60; color: white; border: none; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 5px; display:none; }
     .footer-app { margin-top: 20px; font-size: 10px; opacity: 0.6; }
+    @media (max-width: 650px) {
+      .training-header { position: sticky; top: 0; left: 0; right: 0; margin: 0 -15px 10px; border-radius: 0; }
+      .container { margin: 0; border-radius: 0; }
+      body { padding-bottom: 90px; }
+      .btn-enviar-alvo, .btn-enviar-score { position: fixed; bottom: 0; left: 0; right: 0; width: calc(100% - 20px); max-width: 100%; margin: 0 auto; border-radius: 0; z-index: 40; }
+      .canvas-container { max-height: none; min-height: auto; overflow: hidden; }
+    }
   </style>
 </head>
 <body>
@@ -77,12 +96,19 @@
     <button onclick="document.body.classList.toggle('dark-mode')" style="border:none; background:none; font-size:20px;">🌓</button>
   </div>
 
+  <div id="mini-header" class="training-header" style="display:none;">
+    <span id="headerIdTreino">ID: --</span>
+    <span id="headerAtleta">Atleta: --</span>
+    <span id="headerDataTreino">Data: --</span>
+  </div>
+
   <div class="app-grid">
     <div class="main-section">
       <div class="section-title" style="font-size:15px; margin-top:10px;">Sessão e Ambiente</div>
 
-      <div class="form-group">
-        <input type="text" id="idTreino" style="width:100%; border:2px solid #2980b9" placeholder="ID do Treino">
+      <div id="setup-container">
+        <div class="form-group">
+          <input type="text" id="idTreino" style="width:100%; border:2px solid #2980b9" placeholder="ID do Treino">
         <input type="text" id="atleta" class="w-45" placeholder="Atleta">
         <input type="date" id="dataTreino" class="w-45">
 
@@ -116,9 +142,8 @@
       </select>
 
 <select id="tipoAlvo" style="width:31%; display:none;" onchange="desenharAlvo()">
-  <option value="indoor_18_single">Indoor 18m (Único)</option>
-  <option value="indoor_18_triplo">Indoor 18m (Triplo)</option>
-  <option value="outdoor_122" style="display:none;">Outdoor 122cm</option>
+  <option value="indoor_18_single">Alvo Único</option>
+  <option value="indoor_18_triplo">Alvo Triplo</option>
 </select>
 
 <div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
@@ -144,12 +169,16 @@
           <option value="Sudeste">Sudeste</option>
           <option value="Sudoeste">Sudoeste</option>
         </select>
+        </div>
+
+        <button id="btnStartTraining" class="btn-start" type="button">COMEÇAR</button>
       </div>
 
-      <div id="moduloAlvo">
-        <div class="zoom-controll">
-          <input type="range" id="zoomRange" min="300" max="1200" value="500">
-        </div>
+      <div id="training-container">
+        <div id="moduloAlvo">
+          <div class="zoom-controll">
+            <input type="range" id="zoomRange" min="300" max="1200" value="500">
+          </div>
 
         <div class="canvas-container">
           <canvas id="alvo" width="300" height="300"></canvas>
@@ -162,6 +191,7 @@
 
         <p style="font-weight:bold" id="contadorAlvo">Flechas no Alvo: 0 / 6</p>
         <button id="btnEnviarAlvo" class="btn-enviar-alvo" onclick="enviarAlvo()">1. CONFIRMAR ALVO</button>
+      </div>
       </div>
 
       <div id="moduloScore" style="display:none;">
@@ -209,12 +239,27 @@
   <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
 </div>
 
-<script>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    // Adicione outros imports conforme necessário (auth, etc.)
+
+    // Importar configurações do Firebase
+    import { firebaseConfig } from './config.js';
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Agora você pode usar db para salvar dados, ex:
+    // await addDoc(collection(db, "treinos"), { ...dados });
+  </script>
+
+  <script>
   const canvas = document.getElementById('alvo');
   const ctx = canvas.getContext('2d');
   const zoomRange = document.getElementById('zoomRange');
-
-  let flechas = [];
   let flechasScore = [];
   let historicoLocal = {};
 // Variáveis que controlam o limite do app (começam em 6 por padrão)
@@ -251,6 +296,11 @@ function atualizarRegrasFormato() {
   iniciarApp();
 
   function iniciarApp() {
+    const idInput = document.getElementById('idTreino');
+    if (idInput && !idInput.value) {
+      idInput.value = gerarIDTreino();
+    }
+
     gerarNovoTreino(false);
 
     zoomRange.addEventListener('input', function() {
@@ -262,6 +312,14 @@ function atualizarRegrasFormato() {
     const qtdSeries = document.getElementById('qtdSeries');
     const qtdFlechas = document.getElementById('qtdFlechas');
     const tipoAlvo = document.getElementById('tipoAlvo');
+    const btnStart = document.getElementById('btnStartTraining');
+
+    if (btnStart) {
+      btnStart.addEventListener('click', function(event) {
+        event.preventDefault();
+        ativarTreino();
+      });
+    }
 
     if (qtdSeries) {
       qtdSeries.addEventListener('change', () => {
@@ -286,68 +344,114 @@ function atualizarRegrasFormato() {
     desenharAlvo();
   }
 
+  function gerarIDTreino() {
+    const agora = new Date();
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const hora = String(agora.getHours()).padStart(2, '0');
+    const minuto = String(agora.getMinutes()).padStart(2, '0');
+    return `TR-${dia}${mes}-${hora}${minuto}`;
+  }
+
+  function obterDataAtualInput() {
+    const agora = new Date();
+    const ano = String(agora.getFullYear());
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const dia = String(agora.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
   function gerarNovoTreino(limparAtleta = true) {
-  // === 1. A SUA LÓGICA DE DATA E HORA ===
-  const agora = new Date();
+  // === 1. Gera um novo ID de treino e limpa apenas o atleta ===
+  const idInput = document.getElementById('idTreino');
+  if (idInput) {
+    idInput.value = gerarIDTreino();
+  }
 
-  // Garante que dias e meses menores que 10 ganhem um zero na frente (ex: 09)
-  const dia = String(agora.getDate()).padStart(2, '0');
-  const mes = String(agora.getMonth() + 1).padStart(2, '0');
-  const hora = String(agora.getHours()).padStart(2, '0');
-  const minuto = String(agora.getMinutes()).padStart(2, '0');
+  const atletaInput = document.getElementById('atleta');
+  if (atletaInput && limparAtleta) {
+    atletaInput.value = "";
+  }
 
-  // Preenche os campos de identificação na tela
-  document.getElementById('idTreino').value = `TR-${dia}${mes}-${hora}${minuto}`;
-  document.getElementById('dataTreino').valueAsDate = agora;
-  
-  // Reseta os contadores para T1 - Série 1
+  document.getElementById('dataTreino').value = obterDataAtualInput();
   document.getElementById('tempo').value = "T1";
   document.getElementById('serie').value = "1";
 
-  if (limparAtleta) {
-    document.getElementById('atleta').value = "";
-  }
-
-  // === 2. LIMPANDO O CACHE DE TIROS ===
+  // === 2. Limpa o estado interno do treino ===
   flechas = [];
   flechasScore = [];
   historicoLocal = {};
 
-  // === 3. O GATILHO NOVO DE REGRAS (Fica aqui!) ===
-  // Lê os campos de "Séries" e "Flechas" e trava as regras para este treino
-  atualizarRegrasFormato(); 
-
-  // === 4. ATUALIZANDO OS DESENHOS NA TELA ===
+  // === 3. Atualiza interfaces e desenho ===
+  atualizarRegrasFormato();
   atualizarAlvoUI();
   atualizarScoreUI();
   atualizarListaLateral();
 
-  // Volta para a aba do Alvo e esconde o Score
-  document.getElementById('moduloAlvo').style.display = 'block';
+  // === 4. Volta para a tela de cadastro ===
+  const setup = document.getElementById('setup-container');
+  const training = document.getElementById('training-container');
+  const header = document.getElementById('mini-header');
+
+  if (setup) setup.style.display = 'flex';
+  if (training) training.style.display = 'none';
+  if (header) header.style.display = 'none';
+
+  document.getElementById('moduloAlvo').style.display = 'none';
   document.getElementById('moduloScore').style.display = 'none';
-  document.getElementById('status').innerText = "Novo treino iniciado.";
+  document.getElementById('status').innerText = "";
 }
+
+  function ativarTreino() {
+    const setup = document.getElementById('setup-container');
+    const header = document.getElementById('mini-header');
+    const training = document.getElementById('training-container');
+
+    if (!setup || !header || !training) return;
+
+    const idTreino = document.getElementById('idTreino').value.trim();
+    const atleta = document.getElementById('atleta').value.trim();
+    const dataTreino = document.getElementById('dataTreino').value;
+
+    if (!idTreino || !atleta) {
+      alert('Preencha o ID do Treino e o nome do atleta antes de começar.');
+      return;
+    }
+
+    setup.style.display = 'none';
+    header.style.display = 'flex';
+    training.style.display = 'block';
+    document.getElementById('moduloAlvo').style.display = 'block';
+    document.getElementById('moduloScore').style.display = 'none';
+
+    document.getElementById('headerIdTreino').innerText = `ID: ${idTreino}`;
+    document.getElementById('headerAtleta').innerText = `Atleta: ${atleta}`;
+    document.getElementById('headerDataTreino').innerText = `Data: ${dataTreino}`;
+    desenharAlvo();
+
+    document.getElementById('status').innerText = "Treino iniciado. Marque o alvo para começar.";
+
+    verificarDistancia();
+    const moduloAlvo = document.getElementById('moduloAlvo');
+    if (moduloAlvo) moduloAlvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   function verificarDistancia() {
-  const distancia = document.getElementById('distancia').value;
-  const seletorAlvo = document.getElementById('tipoAlvo');
+    const distancia = document.getElementById('distancia').value;
+    const seletorAlvo = document.getElementById('tipoAlvo');
 
-  if (distancia === "18m") {
-    // Se for 18m, mostra o seletor de alvo
-    seletorAlvo.style.display = "inline-block"; 
-    // Garante que não está selecionado o alvo outdoor
-    if(seletorAlvo.value === "outdoor_122") {
-      seletorAlvo.value = "indoor_18_single";
+    if (distancia === "18m") {
+      seletorAlvo.style.display = "inline-block";
+      if (seletorAlvo.value === "outdoor_122") {
+        seletorAlvo.value = "indoor_18_single";
+      }
+    } else {
+      seletorAlvo.style.display = "none";
+      seletorAlvo.value = "outdoor_122";
     }
-  } else {
-    // Se for 30m, 50m ou 70m, esconde o seletor e volta pro alvo normal
-    seletorAlvo.style.display = "none";
-    seletorAlvo.value = "outdoor_122";
+
+    desenharAlvo();
   }
-  
-  // Atualiza o desenho no Canvas na mesma hora
-  desenharAlvo(); 
-}
 
   function validarAtleta() {
     const campoAtleta = document.getElementById('atleta');
@@ -582,20 +686,30 @@ function desenharFlechas(center, ratio) {
 }
 
 
+function getCanvasCoordinates(event) {
+  const rect = canvas.getBoundingClientRect();
+  const clientX = event.clientX !== undefined ? event.clientX : event.touches[0].clientX;
+  const clientY = event.clientY !== undefined ? event.clientY : event.touches[0].clientY;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const x = (clientX - rect.left) * scaleX;
+  const y = (clientY - rect.top) * scaleY;
+  return { x, y };
+}
+
 // ESCUTADOR DE CLIQUES NO ALVO
 canvas.addEventListener('click', (e) => {
   // Se já tiver 6 flechas, trava o clique
   if (flechas.length >= maxFlechas) return;
 
-  // Pega as proporções exatas do Canvas na tela do celular/computador
-  const rect = canvas.getBoundingClientRect();
   const size = canvas.width;
   const center = size / 2;
   const ratio = size / 300;
+  const { x, y } = getCanvasCoordinates(e);
 
-  // Converte o clique da tela para a nossa coordenada matemática (-150 a +150)
-  const xRel = (e.clientX - rect.left - center) / ratio;
-  const yRel = (center - (e.clientY - rect.top)) / ratio;
+  const xRel = (x - center) / ratio;
+  const yRel = (center - y) / ratio;
 
   // Guarda a flecha na memória do app
   flechas.push({ xRel, yRel });
@@ -603,6 +717,23 @@ canvas.addEventListener('click', (e) => {
   // Atualiza o texto (ex: 1/6) e manda desenhar a bolinha verde
   atualizarAlvoUI();
   desenharAlvo(); 
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  if (flechas.length >= maxFlechas) return;
+  e.preventDefault();
+
+  const size = canvas.width;
+  const center = size / 2;
+  const ratio = size / 300;
+  const { x, y } = getCanvasCoordinates(e);
+
+  const xRel = (x - center) / ratio;
+  const yRel = (center - y) / ratio;
+
+  flechas.push({ xRel, yRel });
+  atualizarAlvoUI();
+  desenharAlvo();
 });
 
  function atualizarAlvoUI() {
