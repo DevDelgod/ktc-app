@@ -58,6 +58,7 @@
   margin: 0 auto;
   touch-action: none;
   width: 100%;
+  height: auto;
   max-width: 400px;
   min-height: 400px;
   aspect-ratio: 1 / 1;
@@ -260,6 +261,9 @@
   const canvas = document.getElementById('alvo');
   const ctx = canvas.getContext('2d');
   const zoomRange = document.getElementById('zoomRange');
+  const dpr = window.devicePixelRatio || 1;
+  const ZOOM_BASE = 500;
+  let nivelZoomAtual = zoomRange ? Number(zoomRange.value) / ZOOM_BASE : 1;
   let flechasScore = [];
   let historicoLocal = {};
   let tipoAlvoSelecionado = 'Alvo Unitário';
@@ -302,11 +306,19 @@ function atualizarRegrasFormato() {
       idInput.value = gerarIDTreino();
     }
 
+    const rect = canvas.getBoundingClientRect();
+    const fallbackWidth = rect.width || canvas.offsetWidth || 400;
+    const fallbackHeight = rect.height || canvas.offsetHeight || 400;
+
+    canvas.width = fallbackWidth * dpr;
+    canvas.height = fallbackHeight * dpr;
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+
     gerarNovoTreino(false);
 
     zoomRange.addEventListener('input', function() {
-      canvas.width = this.value;
-      canvas.height = this.value;
+      nivelZoomAtual = Number(this.value) / ZOOM_BASE;
       desenharAlvo();
     });
 
@@ -546,41 +558,61 @@ function atualizarRegrasFormato() {
  
 
   function desenharAlvo() {
-    const size = canvas.width;
-    const center = size / 2;
-    const ratio = size / 300;
+    const rect = canvas.getBoundingClientRect();
+    const logicalWidth = rect.width || canvas.width / dpr || 400;
+    const logicalHeight = rect.height || canvas.height / dpr || logicalWidth;
 
-    // Limpa o canvas
-    ctx.clearRect(0, 0, size, size);
+    if (rect.width > 0 && rect.height > 0) {
+      canvas.width = logicalWidth * dpr;
+      canvas.height = logicalHeight * dpr;
+    }
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.webkitImageSmoothingEnabled = true;
+    ctx.mozImageSmoothingEnabled = true;
+
+    ctx.scale(dpr, dpr);
+
+    const center = logicalWidth / 2;
+    const ratio = logicalWidth / 300;
+    const strokeWidth = 2 / nivelZoomAtual;
+    const fineStrokeWidth = 1 / nivelZoomAtual;
+
+    // Limpa o fundo do alvo em unidade de tela lógica
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, logicalWidth, logicalHeight);
 
-    // Lê a escolha do usuário no HTML
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.scale(nivelZoomAtual, nivelZoomAtual);
+    ctx.translate(-center, -center);
+
     const seletorAlvo = document.getElementById('tipoAlvo');
     const tipo = seletorAlvo ? seletorAlvo.value : "outdoor_122";
 
     if (tipo === "indoor_18_triplo") {
-      // Desenhar três alvos verticais com anéis 6-11 (incluindo X)
       const coordenadasCentros = [
-        { x: 0, y: 95 },   // Superior
-        { x: 0, y: 0 },    // Central
-        { x: 0, y: -95 }   // Inferior
+        { x: 0, y: 95 },
+        { x: 0, y: 0 },
+        { x: 0, y: -95 }
       ];
 
       const aneisTriplo = [
-        { raio: 45, cor: "#00B4E4", nivel: 6 }, // Zona 6 Azul
-        { raio: 36, cor: "#FF0000", nivel: 7 }, // Zona 7 Vermelho
-        { raio: 27, cor: "#FF0000", nivel: 8 }, // Zona 8 Vermelho
-        { raio: 18, cor: "#FFE500", nivel: 9 }, // Zona 9 Amarelo
-        { raio: 9, cor: "#FFE500", nivel: 10 }, // Zona 10 Amarelo
-        { raio: 4.5, cor: "#FFE500", nivel: 11 } // X
+        { raio: 45, cor: "#00B4E4", nivel: 6 },
+        { raio: 36, cor: "#FF0000", nivel: 7 },
+        { raio: 27, cor: "#FF0000", nivel: 8 },
+        { raio: 18, cor: "#FFE500", nivel: 9 },
+        { raio: 9, cor: "#FFE500", nivel: 10 },
+        { raio: 4.5, cor: "#FFE500", nivel: 11 }
       ];
 
       coordenadasCentros.forEach(coord => {
         const xVis = center + (coord.x * ratio);
         const yVis = center - (coord.y * ratio);
 
-        // Desenha anéis do maior para o menor
         aneisTriplo.forEach((anel) => {
           ctx.beginPath();
           ctx.arc(xVis, yVis, anel.raio * ratio, 0, 2 * Math.PI);
@@ -588,24 +620,18 @@ function atualizarRegrasFormato() {
           ctx.fill();
         });
 
-        // Linhas de separação com cores inteligentes
         aneisTriplo.forEach((anel) => {
           ctx.beginPath();
           ctx.arc(xVis, yVis, anel.raio * ratio, 0, 2 * Math.PI);
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = strokeWidth;
           if (anel.nivel === 3 || anel.nivel === 4) {
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = 0.5;
-          } else if (anel.nivel === 1 || anel.nivel === 2) {
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
-          } else {
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = fineStrokeWidth;
           }
           ctx.stroke();
         });
 
-        // Cruz no centro do X-Ring
         const cruzTamanho = 3;
         ctx.beginPath();
         ctx.moveTo(xVis - cruzTamanho, yVis);
@@ -613,26 +639,24 @@ function atualizarRegrasFormato() {
         ctx.moveTo(xVis, yVis - cruzTamanho);
         ctx.lineTo(xVis, yVis + cruzTamanho);
         ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 1;
+        ctx.lineWidth = strokeWidth;
         ctx.stroke();
       });
     } else {
-      // Alvo único completo com 11 anéis (1-10 + X)
       const aneis = [
-        { raio: 150, cor: "#FFFFFF", nivel: 1 }, // Zona 1 Branco
-        { raio: 135, cor: "#FFFFFF", nivel: 2 }, // Zona 2 Branco
-        { raio: 120, cor: "#202020", nivel: 3 }, // Zona 3 Preto
-        { raio: 105, cor: "#202020", nivel: 4 }, // Zona 4 Preto
-        { raio: 90, cor: "#00B4E4", nivel: 5 },  // Zona 5 Azul
-        { raio: 75, cor: "#00B4E4", nivel: 6 },  // Zona 6 Azul
-        { raio: 60, cor: "#FF0000", nivel: 7 },  // Zona 7 Vermelho
-        { raio: 45, cor: "#FF0000", nivel: 8 },  // Zona 8 Vermelho
-        { raio: 30, cor: "#FFE500", nivel: 9 },  // Zona 9 Amarelo
-        { raio: 15, cor: "#FFE500", nivel: 10 }, // Zona 10 Amarelo
-        { raio: 7.5, cor: "#FFE500", nivel: 11 }  // X
+        { raio: 150, cor: "#FFFFFF", nivel: 1 },
+        { raio: 135, cor: "#FFFFFF", nivel: 2 },
+        { raio: 120, cor: "#202020", nivel: 3 },
+        { raio: 105, cor: "#202020", nivel: 4 },
+        { raio: 90, cor: "#00B4E4", nivel: 5 },
+        { raio: 75, cor: "#00B4E4", nivel: 6 },
+        { raio: 60, cor: "#FF0000", nivel: 7 },
+        { raio: 45, cor: "#FF0000", nivel: 8 },
+        { raio: 30, cor: "#FFE500", nivel: 9 },
+        { raio: 15, cor: "#FFE500", nivel: 10 },
+        { raio: 7.5, cor: "#FFE500", nivel: 11 }
       ];
 
-      // Desenha anéis do maior para o menor
       aneis.forEach((anel) => {
         ctx.beginPath();
         ctx.arc(center, center, anel.raio * ratio, 0, 2 * Math.PI);
@@ -640,24 +664,18 @@ function atualizarRegrasFormato() {
         ctx.fill();
       });
 
-      // Linhas de separação com cores inteligentes
       aneis.forEach((anel) => {
         ctx.beginPath();
         ctx.arc(center, center, anel.raio * ratio, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = strokeWidth;
         if (anel.nivel === 3 || anel.nivel === 4) {
           ctx.strokeStyle = 'white';
-          ctx.lineWidth = 0.5;
-        } else if (anel.nivel === 1 || anel.nivel === 2) {
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 1;
-        } else {
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 1;
+          ctx.lineWidth = fineStrokeWidth;
         }
         ctx.stroke();
       });
 
-      // Cruz no centro do X-Ring
       const cruzTamanho = 3;
       ctx.beginPath();
       ctx.moveTo(center - cruzTamanho, center);
@@ -665,12 +683,12 @@ function atualizarRegrasFormato() {
       ctx.moveTo(center, center - cruzTamanho);
       ctx.lineTo(center, center + cruzTamanho);
       ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 1;
+      ctx.lineWidth = strokeWidth;
       ctx.stroke();
     }
 
-    // Desenha as flechas por cima de tudo
     desenharFlechas(center, ratio);
+    ctx.restore();
   }
 
 // FUNÇÃO AUXILIAR: Desenha as flechas capturadas (sem código duplicado)
@@ -713,42 +731,40 @@ function getCanvasCoordinates(event) {
   const rect = canvas.getBoundingClientRect();
   const clientX = event.clientX !== undefined ? event.clientX : event.touches[0].clientX;
   const clientY = event.clientY !== undefined ? event.clientY : event.touches[0].clientY;
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const centro = rect.width / 2;
 
-  const x = (clientX - rect.left) * scaleX;
-  const y = (clientY - rect.top) * scaleY;
+  let x = clientX - rect.left;
+  let y = clientY - rect.top;
+
+  x = centro + (x - centro) / nivelZoomAtual;
+  y = centro + (y - centro) / nivelZoomAtual;
   return { x, y };
 }
 
 // ESCUTADOR DE CLIQUES NO ALVO
 canvas.addEventListener('click', (e) => {
-  // Se já tiver 6 flechas, trava o clique
   if (flechas.length >= maxFlechas) return;
 
-  const size = canvas.width;
-  const center = size / 2;
-  const ratio = size / 300;
+  const rect = canvas.getBoundingClientRect();
+  const center = rect.width / 2;
+  const ratio = rect.width / 300;
   const { x, y } = getCanvasCoordinates(e);
 
   const xRel = (x - center) / ratio;
   const yRel = (center - y) / ratio;
 
-  // Guarda a flecha na memória do app
   flechas.push({ xRel, yRel });
-  
-  // Atualiza o texto (ex: 1/6) e manda desenhar a bolinha verde
   atualizarAlvoUI();
-  desenharAlvo(); 
+  desenharAlvo();
 });
 
 canvas.addEventListener('touchstart', (e) => {
   if (flechas.length >= maxFlechas) return;
   e.preventDefault();
 
-  const size = canvas.width;
-  const center = size / 2;
-  const ratio = size / 300;
+  const rect = canvas.getBoundingClientRect();
+  const center = rect.width / 2;
+  const ratio = rect.width / 300;
   const { x, y } = getCanvasCoordinates(e);
 
   const xRel = (x - center) / ratio;
