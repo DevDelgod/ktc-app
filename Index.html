@@ -262,6 +262,7 @@
   const zoomRange = document.getElementById('zoomRange');
   let flechasScore = [];
   let historicoLocal = {};
+  let tipoAlvoSelecionado = 'Alvo Unitário';
 // Variáveis que controlam o limite do app (começam em 6 por padrão)
   let maxFlechas = 6; 
 let maxSeries = 6;
@@ -353,6 +354,20 @@ function atualizarRegrasFormato() {
     return `TR-${dia}${mes}-${hora}${minuto}`;
   }
 
+  function obterTipoAlvoAtivo() {
+    const distancia = document.getElementById('distancia').value;
+    if (distancia !== '18m') {
+      return 'Alvo Unitário';
+    }
+
+    const seletorAlvo = document.getElementById('tipoAlvo');
+    if (seletorAlvo && seletorAlvo.value === 'indoor_18_triplo') {
+      return 'Alvo Triplo';
+    }
+
+    return 'Alvo Único';
+  }
+
   function obterDataAtualInput() {
     const agora = new Date();
     const ano = String(agora.getFullYear());
@@ -412,10 +427,18 @@ function atualizarRegrasFormato() {
     const idTreino = document.getElementById('idTreino').value.trim();
     const atleta = document.getElementById('atleta').value.trim();
     const dataTreino = document.getElementById('dataTreino').value;
+    const distancia = document.getElementById('distancia').value;
 
     if (!idTreino || !atleta) {
       alert('Preencha o ID do Treino e o nome do atleta antes de começar.');
       return;
+    }
+
+    if (distancia !== '18m') {
+      tipoAlvoSelecionado = 'Alvo Unitário';
+    } else {
+      const seletorAlvo = document.getElementById('tipoAlvo');
+      tipoAlvoSelecionado = (seletorAlvo && seletorAlvo.value === 'indoor_18_triplo') ? 'Alvo Triplo' : 'Alvo Único';
     }
 
     setup.style.display = 'none';
@@ -836,6 +859,7 @@ canvas.addEventListener('touchstart', (e) => {
     const t = document.getElementById('tempo').value;
     const s = document.getElementById('serie').value;
 
+    const tipoAlvo = tipoAlvoSelecionado || obterTipoAlvoAtivo();
     const pacote = flechas.map((f, i) => ({
       idTreino: idT,
       dataTreino: document.getElementById('dataTreino').value,
@@ -850,8 +874,20 @@ canvas.addEventListener('touchstart', (e) => {
       v_vento: document.getElementById('v_vento').value || "0",
       d_vento: document.getElementById('d_vento').value,
       clima: document.getElementById('clima').value,
-      tipo_alvo: document.getElementById('tipoAlvo').value
+      tipo_alvo: tipoAlvo,
+      tipoAlvo: tipoAlvo
     }));
+
+    pacote.forEach(dadosParaEnviar => {
+      if (!dadosParaEnviar.tipoAlvo) {
+        dadosParaEnviar.tipoAlvo = 'Alvo Unitário';
+      }
+      if (!dadosParaEnviar.tipo_alvo) {
+        dadosParaEnviar.tipo_alvo = dadosParaEnviar.tipoAlvo;
+      }
+    });
+
+    console.log('Dados indo para o Excel:', pacote);
 
     google.script.run.withSuccessHandler((res) => {
       document.getElementById('status').innerText = res + " Agora insira a pontuação.";
@@ -883,6 +919,7 @@ canvas.addEventListener('touchstart', (e) => {
     const s = document.getElementById('serie').value;
     const chave = `${t}-S${s}`;
 
+    const tipoAlvo = tipoAlvoSelecionado || obterTipoAlvoAtivo();
     const pacoteScore = {
       idTreino: document.getElementById('idTreino').value,
       dataTreino: document.getElementById('dataTreino').value,
@@ -895,8 +932,18 @@ canvas.addEventListener('touchstart', (e) => {
       clima: document.getElementById('clima').value,
       v_vento: document.getElementById('v_vento').value || "0",
       d_vento: document.getElementById('d_vento').value,
-      tipo_alvo: document.getElementById('tipoAlvo').value
+      tipo_alvo: tipoAlvo,
+      tipoAlvo: tipoAlvo
     };
+
+    if (!pacoteScore.tipoAlvo) {
+      pacoteScore.tipoAlvo = 'Alvo Unitário';
+    }
+    if (!pacoteScore.tipo_alvo) {
+      pacoteScore.tipo_alvo = pacoteScore.tipoAlvo;
+    }
+
+    console.log('Dados indo para o Excel:', pacoteScore);
 
     google.script.run.withSuccessHandler((res) => {
       historicoLocal[chave] = {
