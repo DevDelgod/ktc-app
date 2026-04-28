@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kafu Tiro Certo</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+
+<meta name="apple-mobile-web-app-title" content="Kafu Tiro Certo">
+<meta name="application-name" content="Kafu Tiro Certo">
+<meta name="theme-color" content="#f39c12">
+  <style>
+    :root { --bg-body: #f0f2f5; --bg-card: #ffffff; --text-main: #1c1e21; --text-sub: #555555; --border: #ddd; --input-bg: #ffffff; }
+    body.dark-mode { --bg-body: #18191a; --bg-card: #242526; --text-main: #e4e6eb; --text-sub: #b0b3b8; --border: #3e4042; --input-bg: #3a3b3c; }
+    body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: var(--bg-body); padding: 10px; color: var(--text-main); margin: 0; }
+    .container { max-width: 550px; margin: 10px auto; background: var(--bg-card); padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+    .app-grid { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .main-section { flex: 1; min-width: 300px; }
+    .side-history { width: 120px; background: var(--bg-body); padding: 10px; border-radius: 15px; border: 1px solid var(--border); }
+    .serie-item { display: flex; align-items: center; margin-bottom: 8px; gap: 5px; }
+    .btn-revisar { flex: 1; padding: 8px; font-size: 11px; border-radius: 8px; border: none; background: #3498db; color: white; cursor: pointer; font-weight: bold; }
+    .btn-del-mini { background: #e74c3c; color: white; border: none; border-radius: 5px; padding: 8px 10px; cursor: pointer; }
+    .header-app { display: flex; align-items: center; justify-content: space-between; margin-top: -5px; margin-bottom: -15px; }
+    .logo-img { max-height: 90px; }
+    body.dark-mode .logo-img { filter: invert(1); }
+    .section-title { font-size: 10px; font-weight: bold; color: var(--text-sub); text-transform: uppercase; margin: 0px 0 5px; text-align: left; letter-spacing: 1px; }
+    .form-group { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    input, select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-size: 14px; }
+    .w-45 { width: 48%; }
+    .zoom-controll { margin: 15px 0; background: var(--bg-body); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+    #zoomRange { width: 85%; accent-color: #2980b9; }
+    .canvas-container {
+  border: 2px solid var(--border);
+  border-radius: 15px;
+  background: white;
+  margin: 10px 0;
+  overflow: auto;
+  touch-action: pan-x pan-y;
+  display: block;
+  min-height: 300px;
+  max-height: 70vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+#alvo {
+  cursor: crosshair;
+  display: block;
+  margin: 0 auto;
+  touch-action: pan-x pan-y;
+}
+    #alvo {cursor: crosshair; display: block; margin: 0 auto;}
+    #alvo { cursor: crosshair; display: block; margin: 0 auto; }
+    .score-display { display: flex; justify-content: center; gap: 5px; margin: 15px 0; }
+    .score-box { width: 15%; aspect-ratio: 1; border: 2px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; background: var(--input-bg); }
+    .score-total { font-size: 24px; font-weight: bold; color: #27ae60; margin: 10px 0; }
+    .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
+    .num-btn { padding: 15px; font-size: 18px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); }
+    .num-btn.amarelo { background: #f1c40f; color: #000; }
+    .num-btn.vermelho { background: #e74c3c; color: #fff; }
+    .num-btn.azul { background: #3498db; color: #fff; }
+    .num-btn.preto { background: #2c3e50; color: #fff; }
+    .num-btn.branco { background: #ecf0f1; color: #000; }
+    .num-btn.miss { background: #95a5a6; color: #fff; }
+    .controls { display: flex; gap: 5px; margin-bottom: 10px; }
+    button { cursor: pointer; transition: 0.2s; }
+    .btn-enviar-alvo { padding: 15px; background: #2980b9; color: white; border: none; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 5px; display:none; }
+    .btn-enviar-score { padding: 15px; background: #27ae60; color: white; border: none; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; margin-top: 5px; display:none; }
+    .footer-app { margin-top: 20px; font-size: 10px; opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-app">
+    <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-img">
+    <button onclick="document.body.classList.toggle('dark-mode')" style="border:none; background:none; font-size:20px;">🌓</button>
+  </div>
+
+  <div class="app-grid">
+    <div class="main-section">
+      <div class="section-title" style="font-size:15px; margin-top:10px;">Sessão e Ambiente</div>
+
+      <div class="form-group">
+        <input type="text" id="idTreino" style="width:100%; border:2px solid #2980b9" placeholder="ID do Treino">
+        <input type="text" id="atleta" class="w-45" placeholder="Atleta">
+        <input type="date" id="dataTreino" class="w-45">
+
+        <select id="tempo" class="w-45">
+          <option value="T1">T1</option>
+          <option value="T2">T2</option>
+        </select>
+
+        <select id="serie" class="w-45">
+          <option value="1">Série 1</option>
+          <option value="2">Série 2</option>
+          <option value="3">Série 3</option>
+          <option value="4">Série 4</option>
+          <option value="5">Série 5</option>
+          <option value="6">Série 6</option>
+        </select>
+
+        <select id="clima" style="width:31%">
+          <option value="Sol">Sol</option>
+          <option value="Sol Extremo">Sol Extremo</option>
+          <option value="Nublado">Nublado</option>
+          <option value="Chuva">Chuva</option>
+          <option value="Chuva Intensa">Chuva Intensa</option>
+        </select>
+
+      <select id="distancia" style="width:31%" onchange="verificarDistancia()">
+        <option value="18m">18m</option>
+        <option value="30m">30m</option>
+        <option value="50m">50m</option>
+        <option value="70m" selected>70m</option>
+      </select>
+
+<select id="tipoAlvo" style="width:31%; display:none;" onchange="desenharAlvo()">
+  <option value="indoor_18_single">Indoor 18m (Único)</option>
+  <option value="indoor_18_triplo">Indoor 18m (Triplo)</option>
+  <option value="outdoor_122" style="display:none;">Outdoor 122cm</option>
+</select>
+
+<div style="display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px;">
+  <div style="width: 50%;">
+    <label for="qtdSeries">Séries por Rodada (Ex: T1):</label>
+    <input type="number" id="qtdSeries" value="6" min="1" max="20" style="width: 100%;" required>
+  </div>
+  <div style="width: 50%;">
+    <label for="qtdFlechas">Flechas por Série:</label>
+    <input type="number" id="qtdFlechas" value="6" min="1" max="15" style="width: 100%;" required>
+  </div>
+</div>
+
+        <input type="number" id="v_vento" style="width:31%" placeholder="Vento Km/h">
+
+        <select id="d_vento" style="width:100%">
+          <option value="Norte">Norte</option>
+          <option value="Sul">Sul</option>
+          <option value="Leste">Leste</option>
+          <option value="Oeste">Oeste</option>
+          <option value="Nordeste">Nordeste</option>
+          <option value="Noroeste">Noroeste</option>
+          <option value="Sudeste">Sudeste</option>
+          <option value="Sudoeste">Sudoeste</option>
+        </select>
+      </div>
+
+      <div id="moduloAlvo">
+        <div class="zoom-controll">
+          <input type="range" id="zoomRange" min="300" max="1200" value="500">
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="alvo" width="300" height="300"></canvas>
+        </div>
+
+        <div class="controls">
+          <button onclick="desfazer('alvo')" style="flex:1; background:#e74c3c; color:white; border:none; padding:10px; border-radius:8px;">↩ DESFAZER</button>
+          <button onclick="limparLocal('alvo')" style="flex:1; background:#f39c12; color:white; border:none; padding:10px; border-radius:8px;">🗑️ LIMPAR</button>
+        </div>
+
+        <p style="font-weight:bold" id="contadorAlvo">Flechas no Alvo: 0 / 6</p>
+        <button id="btnEnviarAlvo" class="btn-enviar-alvo" onclick="enviarAlvo()">1. CONFIRMAR ALVO</button>
+      </div>
+
+      <div id="moduloScore" style="display:none;">
+      <h3>Pontuação da Série</h3>
+      <div id="containerFlechasScore" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+      </div>
+  
+      <div id="tecladoNumerico"> 
+      </div>
+        <div class="score-total" id="scoreTotal">Total: 0</div>
+
+        <div class="numpad">
+          <button class="num-btn amarelo" onclick="addPonto('X')">X</button>
+          <button class="num-btn amarelo" onclick="addPonto('10')">10</button>
+          <button class="num-btn vermelho" onclick="addPonto('9')">9</button>
+          <button class="num-btn vermelho" onclick="addPonto('8')">8</button>
+          <button class="num-btn azul" onclick="addPonto('7')">7</button>
+          <button class="num-btn azul" onclick="addPonto('6')">6</button>
+          <button class="num-btn preto" onclick="addPonto('5')">5</button>
+          <button class="num-btn preto" onclick="addPonto('4')">4</button>
+          <button class="num-btn branco" onclick="addPonto('3')">3</button>
+          <button class="num-btn branco" onclick="addPonto('2')">2</button>
+          <button class="num-btn branco" onclick="addPonto('1')">1</button>
+          <button class="num-btn miss" onclick="addPonto('M')">M</button>
+        </div>
+
+        <div class="controls">
+          <button onclick="desfazer('score')" style="flex:1; background:#e74c3c; color:white; border:none; padding:10px; border-radius:8px;">↩ APAGAR</button>
+          <button onclick="limparLocal('score')" style="flex:1; background:#f39c12; color:white; border:none; padding:10px; border-radius:8px;">🗑️ LIMPAR TUDO</button>
+        </div>
+
+        <p style="font-weight:bold" id="contadorScore">Pontos Inseridos: 0 / 6</p>
+        <button id="btnEnviarScore" class="btn-enviar-score" onclick="enviarScore()">2. FINALIZAR SÉRIE</button>
+      </div>
+
+      <p id="status" style="font-size:12px; color:#2980b9; margin-top:10px;"></p>
+    </div>
+
+    <div class="side-history">
+      <div class="section-title" style="text-align:center">Enviadas</div>
+      <div id="listaSeries"></div>
+    </div>
+  </div>
+
+  <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
+</div>
+
+<script>
+  const canvas = document.getElementById('alvo');
+  const ctx = canvas.getContext('2d');
+  const zoomRange = document.getElementById('zoomRange');
+
+  let flechas = [];
+  let flechasScore = [];
+  let historicoLocal = {};
+// Variáveis que controlam o limite do app (começam em 6 por padrão)
+  let maxFlechas = 6; 
+let maxSeries = 6;
+
+// Função que lê o que o atleta digitou e tranca as regras do treino
+function atualizarRegrasFormato() {
+  const inputSeries = document.getElementById('qtdSeries');
+  const inputFlechas = document.getElementById('qtdFlechas');
+  
+  // Se os campos existirem, pega o valor, se não, usa 6 como padrão
+  maxSeries = (inputSeries && inputSeries.value) ? parseInt(inputSeries.value) : 6;
+  maxFlechas = (inputFlechas && inputFlechas.value) ? parseInt(inputFlechas.value) : 6;
+
+  // Garante que não seja zero ou texto vazio
+  if (isNaN(maxSeries) || maxSeries < 1) maxSeries = 6;
+  if (isNaN(maxFlechas) || maxFlechas < 1) maxFlechas = 6;
+
+  // Ajusta listas internas caso o usuário reduza o número de flechas
+  if (flechas.length > maxFlechas) {
+    flechas = flechas.slice(0, maxFlechas);
+  }
+  if (flechasScore.length > maxFlechas) {
+    flechasScore = flechasScore.slice(0, maxFlechas);
+  }
+  
+  console.log("Regras atualizadas: Séries:", maxSeries, "Flechas:", maxFlechas);
+  
+  // Atualiza os textos de ajuda na tela (0 / 6 vira 0 / 3)
+  atualizarAlvoUI();
+  atualizarScoreUI();
+}
+  iniciarApp();
+
+  function iniciarApp() {
+    gerarNovoTreino(false);
+
+    zoomRange.addEventListener('input', function() {
+      canvas.width = this.value;
+      canvas.height = this.value;
+      desenharAlvo();
+    });
+
+    const qtdSeries = document.getElementById('qtdSeries');
+    const qtdFlechas = document.getElementById('qtdFlechas');
+    const tipoAlvo = document.getElementById('tipoAlvo');
+
+    if (qtdSeries) {
+      qtdSeries.addEventListener('change', () => {
+        atualizarRegrasFormato();
+      });
+    }
+
+    if (qtdFlechas) {
+      qtdFlechas.addEventListener('change', () => {
+        atualizarRegrasFormato();
+        atualizarAlvoUI();
+        atualizarScoreUI();
+      });
+    }
+
+    if (tipoAlvo) {
+      tipoAlvo.addEventListener('change', () => {
+        desenharAlvo();
+      });
+    }
+
+    desenharAlvo();
+  }
+
+  function gerarNovoTreino(limparAtleta = true) {
+  // === 1. A SUA LÓGICA DE DATA E HORA ===
+  const agora = new Date();
+
+  // Garante que dias e meses menores que 10 ganhem um zero na frente (ex: 09)
+  const dia = String(agora.getDate()).padStart(2, '0');
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const hora = String(agora.getHours()).padStart(2, '0');
+  const minuto = String(agora.getMinutes()).padStart(2, '0');
+
+  // Preenche os campos de identificação na tela
+  document.getElementById('idTreino').value = `TR-${dia}${mes}-${hora}${minuto}`;
+  document.getElementById('dataTreino').valueAsDate = agora;
+  
+  // Reseta os contadores para T1 - Série 1
+  document.getElementById('tempo').value = "T1";
+  document.getElementById('serie').value = "1";
+
+  if (limparAtleta) {
+    document.getElementById('atleta').value = "";
+  }
+
+  // === 2. LIMPANDO O CACHE DE TIROS ===
+  flechas = [];
+  flechasScore = [];
+  historicoLocal = {};
+
+  // === 3. O GATILHO NOVO DE REGRAS (Fica aqui!) ===
+  // Lê os campos de "Séries" e "Flechas" e trava as regras para este treino
+  atualizarRegrasFormato(); 
+
+  // === 4. ATUALIZANDO OS DESENHOS NA TELA ===
+  atualizarAlvoUI();
+  atualizarScoreUI();
+  atualizarListaLateral();
+
+  // Volta para a aba do Alvo e esconde o Score
+  document.getElementById('moduloAlvo').style.display = 'block';
+  document.getElementById('moduloScore').style.display = 'none';
+  document.getElementById('status').innerText = "Novo treino iniciado.";
+}
+
+  function verificarDistancia() {
+  const distancia = document.getElementById('distancia').value;
+  const seletorAlvo = document.getElementById('tipoAlvo');
+
+  if (distancia === "18m") {
+    // Se for 18m, mostra o seletor de alvo
+    seletorAlvo.style.display = "inline-block"; 
+    // Garante que não está selecionado o alvo outdoor
+    if(seletorAlvo.value === "outdoor_122") {
+      seletorAlvo.value = "indoor_18_single";
+    }
+  } else {
+    // Se for 30m, 50m ou 70m, esconde o seletor e volta pro alvo normal
+    seletorAlvo.style.display = "none";
+    seletorAlvo.value = "outdoor_122";
+  }
+  
+  // Atualiza o desenho no Canvas na mesma hora
+  desenharAlvo(); 
+}
+
+  function validarAtleta() {
+    const campoAtleta = document.getElementById('atleta');
+    const nomeAtleta = campoAtleta.value.trim();
+
+    if (nomeAtleta === "") {
+      alert("Informe o nome do atleta antes de salvar a série.");
+      campoAtleta.focus();
+      campoAtleta.style.border = "2px solid #e74c3c";
+      return false;
+    }
+
+    campoAtleta.style.border = "1px solid var(--border)";
+    return true;
+  }
+
+  function retornarParaAlvo() {
+    flechas = [];
+    flechasScore = [];
+
+    atualizarAlvoUI();
+    atualizarScoreUI();
+
+    document.getElementById('moduloAlvo').style.display = 'block';
+    document.getElementById('moduloScore').style.display = 'none';
+
+    const tempoAtual = document.getElementById('tempo').value;
+    const serieAtual = document.getElementById('serie').value;
+
+    document.getElementById('status').innerText = `Pronto para ${tempoAtual} - Série ${serieAtual}.`;
+  }
+
+  function avancarProximaSerie() {
+  const tempoAtual = document.getElementById('tempo').value;
+  const serieAtual = parseInt(document.getElementById('serie').value);
+
+  // Se ainda não chegou no limite de séries do T1, avança uma série
+  if (tempoAtual === "T1" && serieAtual < maxSeries) {
+    document.getElementById('serie').value = String(serieAtual + 1);
+    retornarParaAlvo();
+    return;
+  }
+
+  // Se bateu no limite do T1, pula para o T2 - Série 1
+  if (tempoAtual === "T1" && serieAtual === maxSeries) {
+    document.getElementById('tempo').value = "T2";
+    document.getElementById('serie').value = "1";
+    alert(`T1 concluído! Iniciando T2 - Série 1.`);
+    retornarParaAlvo();
+    return;
+  }
+
+  // Se ainda não chegou no limite de séries do T2, avança uma série
+  if (tempoAtual === "T2" && serieAtual < maxSeries) {
+    document.getElementById('serie').value = String(serieAtual + 1);
+    retornarParaAlvo();
+    return;
+  }
+
+  // Se bateu no limite do T2, finaliza o treino!
+  if (tempoAtual === "T2" && serieAtual === maxSeries) {
+    setTimeout(() => {
+      alert("Treino completo finalizado! O app será resetado para um novo treino.");
+      gerarNovoTreino(true);
+    }, 300);
+  }
+}
+
+ 
+
+  function desenharAlvo() {
+    const size = canvas.width;
+    const center = size / 2;
+    const ratio = size / 300;
+
+    // Limpa o canvas
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, size, size);
+
+    // Lê a escolha do usuário no HTML
+    const seletorAlvo = document.getElementById('tipoAlvo');
+    const tipo = seletorAlvo ? seletorAlvo.value : "outdoor_122";
+
+    if (tipo === "indoor_18_triplo") {
+      // Desenhar três alvos verticais com anéis 6-11 (incluindo X)
+      const coordenadasCentros = [
+        { x: 0, y: 95 },   // Superior
+        { x: 0, y: 0 },    // Central
+        { x: 0, y: -95 }   // Inferior
+      ];
+
+      const aneisTriplo = [
+        { raio: 45, cor: "#00B4E4", nivel: 6 }, // Zona 6 Azul
+        { raio: 36, cor: "#FF0000", nivel: 7 }, // Zona 7 Vermelho
+        { raio: 27, cor: "#FF0000", nivel: 8 }, // Zona 8 Vermelho
+        { raio: 18, cor: "#FFE500", nivel: 9 }, // Zona 9 Amarelo
+        { raio: 9, cor: "#FFE500", nivel: 10 }, // Zona 10 Amarelo
+        { raio: 4.5, cor: "#FFE500", nivel: 11 } // X
+      ];
+
+      coordenadasCentros.forEach(coord => {
+        const xVis = center + (coord.x * ratio);
+        const yVis = center - (coord.y * ratio);
+
+        // Desenha anéis do maior para o menor
+        aneisTriplo.forEach((anel) => {
+          ctx.beginPath();
+          ctx.arc(xVis, yVis, anel.raio * ratio, 0, 2 * Math.PI);
+          ctx.fillStyle = anel.cor;
+          ctx.fill();
+        });
+
+        // Linhas de separação com cores inteligentes
+        aneisTriplo.forEach((anel) => {
+          ctx.beginPath();
+          ctx.arc(xVis, yVis, anel.raio * ratio, 0, 2 * Math.PI);
+          if (anel.nivel === 3 || anel.nivel === 4) {
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 0.5;
+          } else if (anel.nivel === 1 || anel.nivel === 2) {
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+          } else {
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+          }
+          ctx.stroke();
+        });
+
+        // Cruz no centro do X-Ring
+        const cruzTamanho = 3;
+        ctx.beginPath();
+        ctx.moveTo(xVis - cruzTamanho, yVis);
+        ctx.lineTo(xVis + cruzTamanho, yVis);
+        ctx.moveTo(xVis, yVis - cruzTamanho);
+        ctx.lineTo(xVis, yVis + cruzTamanho);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    } else {
+      // Alvo único completo com 11 anéis (1-10 + X)
+      const aneis = [
+        { raio: 150, cor: "#FFFFFF", nivel: 1 }, // Zona 1 Branco
+        { raio: 135, cor: "#FFFFFF", nivel: 2 }, // Zona 2 Branco
+        { raio: 120, cor: "#202020", nivel: 3 }, // Zona 3 Preto
+        { raio: 105, cor: "#202020", nivel: 4 }, // Zona 4 Preto
+        { raio: 90, cor: "#00B4E4", nivel: 5 },  // Zona 5 Azul
+        { raio: 75, cor: "#00B4E4", nivel: 6 },  // Zona 6 Azul
+        { raio: 60, cor: "#FF0000", nivel: 7 },  // Zona 7 Vermelho
+        { raio: 45, cor: "#FF0000", nivel: 8 },  // Zona 8 Vermelho
+        { raio: 30, cor: "#FFE500", nivel: 9 },  // Zona 9 Amarelo
+        { raio: 15, cor: "#FFE500", nivel: 10 }, // Zona 10 Amarelo
+        { raio: 7.5, cor: "#FFE500", nivel: 11 }  // X
+      ];
+
+      // Desenha anéis do maior para o menor
+      aneis.forEach((anel) => {
+        ctx.beginPath();
+        ctx.arc(center, center, anel.raio * ratio, 0, 2 * Math.PI);
+        ctx.fillStyle = anel.cor;
+        ctx.fill();
+      });
+
+      // Linhas de separação com cores inteligentes
+      aneis.forEach((anel) => {
+        ctx.beginPath();
+        ctx.arc(center, center, anel.raio * ratio, 0, 2 * Math.PI);
+        if (anel.nivel === 3 || anel.nivel === 4) {
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 0.5;
+        } else if (anel.nivel === 1 || anel.nivel === 2) {
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 1;
+        } else {
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 1;
+        }
+        ctx.stroke();
+      });
+
+      // Cruz no centro do X-Ring
+      const cruzTamanho = 3;
+      ctx.beginPath();
+      ctx.moveTo(center - cruzTamanho, center);
+      ctx.lineTo(center + cruzTamanho, center);
+      ctx.moveTo(center, center - cruzTamanho);
+      ctx.lineTo(center, center + cruzTamanho);
+      ctx.strokeStyle = "#000000";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Desenha as flechas por cima de tudo
+    desenharFlechas(center, ratio);
+  }
+
+// FUNÇÃO AUXILIAR: Desenha as flechas capturadas (sem código duplicado)
+function desenharFlechas(center, ratio) {
+  flechas.forEach((f, i) => {
+    // Como xRel e yRel são sempre cartesianos absolutos da tela inteira, a conversão é única
+    const xVis = center + (f.xRel * ratio);
+    const yVis = center - (f.yRel * ratio);
+
+    // Ponto pequeno (preciso)
+    ctx.beginPath();
+    ctx.arc(xVis, yVis, 2.5 * ratio, 0, 2 * Math.PI);
+    ctx.fillStyle = "#2ecc71";
+    ctx.fill();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1 * ratio;
+    ctx.stroke();
+
+    // Cruz de precisão (MOSTRA O CENTRO REAL)
+    ctx.beginPath();
+    ctx.moveTo(xVis - 6 * ratio, yVis);
+    ctx.lineTo(xVis + 6 * ratio, yVis);
+    ctx.moveTo(xVis, yVis - 6 * ratio);
+    ctx.lineTo(xVis, yVis + 6 * ratio);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1 * ratio;
+    ctx.stroke();
+
+    // Número acima (não cobre o ponto)
+    ctx.fillStyle = "#000000";
+    ctx.font = `bold ${9 * ratio}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(i + 1, xVis, yVis - 8 * ratio);
+  });
+}
+
+
+// ESCUTADOR DE CLIQUES NO ALVO
+canvas.addEventListener('click', (e) => {
+  // Se já tiver 6 flechas, trava o clique
+  if (flechas.length >= maxFlechas) return;
+
+  // Pega as proporções exatas do Canvas na tela do celular/computador
+  const rect = canvas.getBoundingClientRect();
+  const size = canvas.width;
+  const center = size / 2;
+  const ratio = size / 300;
+
+  // Converte o clique da tela para a nossa coordenada matemática (-150 a +150)
+  const xRel = (e.clientX - rect.left - center) / ratio;
+  const yRel = (center - (e.clientY - rect.top)) / ratio;
+
+  // Guarda a flecha na memória do app
+  flechas.push({ xRel, yRel });
+  
+  // Atualiza o texto (ex: 1/6) e manda desenhar a bolinha verde
+  atualizarAlvoUI();
+  desenharAlvo(); 
+});
+
+ function atualizarAlvoUI() {
+  // 1. Atualiza o texto do contador usando a variável maxFlechas
+  const labelAlvo = document.getElementById('contadorAlvo');
+  if (labelAlvo) {
+    labelAlvo.innerText = `Flechas no Alvo: ${flechas.length} / ${maxFlechas}`;
+  }
+
+  // 2. Redesenha as bolinhas no alvo
+  desenharAlvo();
+
+  // 3. Mostra o botão "Enviar" apenas quando atingir o limite definido (maxFlechas)
+  const btnEnviar = document.getElementById('btnEnviarAlvo');
+  if (btnEnviar) {
+    btnEnviar.style.display = flechas.length === maxFlechas ? "block" : "none";
+    btnEnviar.disabled = false;
+  }
+}
+
+  function addPonto(val) {
+    if (flechasScore.length >= maxFlechas) return;
+    flechasScore.push(val);
+    atualizarScoreUI();
+  }
+
+  function atualizarScoreUI() {
+    const container = document.getElementById('containerFlechasScore');
+    if (!container) return;
+
+    container.innerHTML = '';
+    let totalScore = 0;
+
+    for (let i = 0; i < maxFlechas; i++) {
+      const box = document.createElement('div');
+      box.className = 'ponto-box';
+      box.style.border = '2px solid #ccc';
+      box.style.padding = '10px';
+      box.style.minWidth = '30px';
+      box.style.textAlign = 'center';
+      box.style.fontWeight = 'bold';
+      box.style.background = '#f8f9fa';
+      box.style.borderRadius = '8px';
+      box.style.margin = '2px';
+
+      const valor = flechasScore[i] || '';
+      box.innerText = valor || '-';
+
+      if (valor === 'X') {
+        totalScore += 10;
+      } else if (valor !== '' && valor !== 'M') {
+        totalScore += parseInt(valor, 10) || 0;
+      }
+
+      container.appendChild(box);
+    }
+
+    document.getElementById('scoreTotal').innerText = `Total: ${totalScore}`;
+    document.getElementById('contadorScore').innerText = `Pontos Inseridos: ${flechasScore.length} / ${maxFlechas}`;
+
+    const btnEnviar = document.getElementById('btnEnviarScore');
+    if (btnEnviar) {
+      btnEnviar.style.display = flechasScore.length === maxFlechas ? 'block' : 'none';
+      btnEnviar.disabled = false;
+    }
+  }
+
+  function desfazer(tipo) {
+    if (tipo === 'alvo') {
+      flechas.pop();
+      atualizarAlvoUI();
+    } else {
+      flechasScore.pop();
+      atualizarScoreUI();
+    }
+  }
+
+  function limparLocal(tipo) {
+    if (tipo === 'alvo') {
+      flechas = [];
+      atualizarAlvoUI();
+    } else {
+      flechasScore = [];
+      atualizarScoreUI();
+    }
+  }
+
+  function enviarAlvo() {
+    if (!validarAtleta()) return;
+
+    if (flechas.length !== maxFlechas) {
+      alert(`Marque as ${maxFlechas} flechas no alvo antes de confirmar.`);
+      return;
+    }
+
+    document.getElementById('btnEnviarAlvo').disabled = true;
+    document.getElementById('status').innerText = "Salvando Alvo na Planilha...";
+
+    const idT = document.getElementById('idTreino').value;
+    const t = document.getElementById('tempo').value;
+    const s = document.getElementById('serie').value;
+
+    const pacote = flechas.map((f, i) => ({
+      idTreino: idT,
+      dataTreino: document.getElementById('dataTreino').value,
+      atleta: document.getElementById('atleta').value.trim(),
+      tempo: t,
+      serie: s,
+      serieGlobal: t === "T1" ? parseInt(s) : parseInt(s) + 6,
+      flecha: i + 1,
+      idDisparo: `${idT}-${t}-S${s}-F${i + 1}`,
+      x: f.xRel.toFixed(2).replace('.', ','),
+      y: f.yRel.toFixed(2).replace('.', ','),
+      v_vento: document.getElementById('v_vento').value || "0",
+      d_vento: document.getElementById('d_vento').value,
+      clima: document.getElementById('clima').value,
+      tipo_alvo: document.getElementById('tipoAlvo').value
+    }));
+
+    google.script.run.withSuccessHandler((res) => {
+      document.getElementById('status').innerText = res + " Agora insira a pontuação.";
+      document.getElementById('btnEnviarAlvo').disabled = false;
+      document.getElementById('moduloAlvo').style.display = 'none';
+      document.getElementById('moduloScore').style.display = 'block';
+      limparLocal('score');
+    }).salvarDados(pacote);
+  }
+
+  function enviarScore() {
+    if (!validarAtleta()) return;
+
+    if (flechasScore.length !== maxFlechas) {
+      alert(`Insira os ${maxFlechas} pontos da série antes de finalizar.`);
+      return;
+    }
+
+    document.getElementById('btnEnviarScore').disabled = true;
+    document.getElementById('status').innerText = "Finalizando Série...";
+
+    let total = 0;
+    flechasScore.forEach(v => {
+      if (v === 'X') total += 10;
+      else if (v !== 'M') total += parseInt(v);
+    });
+
+    const t = document.getElementById('tempo').value;
+    const s = document.getElementById('serie').value;
+    const chave = `${t}-S${s}`;
+
+    const pacoteScore = {
+      idTreino: document.getElementById('idTreino').value,
+      dataTreino: document.getElementById('dataTreino').value,
+      atleta: document.getElementById('atleta').value.trim(),
+      distancia: document.getElementById('distancia').value,
+      tempo: t,
+      serie: s,
+      flechasString: flechasScore.join(" "),
+      total: total,
+      clima: document.getElementById('clima').value,
+      v_vento: document.getElementById('v_vento').value || "0",
+      d_vento: document.getElementById('d_vento').value,
+      tipo_alvo: document.getElementById('tipoAlvo').value
+    };
+
+    google.script.run.withSuccessHandler((res) => {
+      historicoLocal[chave] = {
+        alvo: [...flechas],
+        score: [...flechasScore]
+      };
+
+      atualizarListaLateral();
+
+      document.getElementById('status').innerText = `${res} ${chave} concluída com sucesso.`;
+      document.getElementById('btnEnviarScore').disabled = false;
+
+      avancarProximaSerie();
+
+    }).salvarScorecard(pacoteScore);
+  }
+
+  function atualizarListaLateral() {
+    const div = document.getElementById('listaSeries');
+    div.innerHTML = "";
+
+    Object.keys(historicoLocal).forEach(chave => {
+      div.innerHTML += `
+        <div class="serie-item">
+          <button class="btn-revisar" onclick="alert('Série ${chave} enviada! Edição via web em breve.')">✔️ ${chave}</button>
+          <button class="btn-del-mini" onclick="excluirTotal('${chave}')">X</button>
+        </div>`;
+    });
+  }
+
+  function excluirTotal(chave) {
+    if (!confirm("Excluir esta série inteira, alvo e pontos, da planilha?")) return;
+
+    const partes = chave.split('-S');
+    const idT = document.getElementById('idTreino').value;
+
+    document.getElementById('status').innerText = "Deletando da Planilha...";
+
+    google.script.run.withSuccessHandler((res) => {
+      delete historicoLocal[chave];
+      atualizarListaLateral();
+      alert(res);
+      document.getElementById('status').innerText = "";
+    }).excluirSeriePlanilha(idT, partes[0], partes[1]);
+  }
+</script>
+</body>
+</html>

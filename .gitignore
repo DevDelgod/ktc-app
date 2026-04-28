@@ -1,0 +1,8 @@
+# Ignore local secret config files
+config.js
+.env
+.env.*
+
+# Google Apps Script (opcional, se quiser)
+node_modules/
+.DS_Store
