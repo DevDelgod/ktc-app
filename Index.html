@@ -242,9 +242,8 @@
 
   <script type="module">
     // Import Firebase modules
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-    // Adicione outros imports conforme necessário (auth, etc.)
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js';
+    import { getFirestore, doc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js';
 
     // Importar configurações do Firebase
     import { firebaseConfig } from './config.js';
@@ -253,8 +252,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Agora você pode usar db para salvar dados, ex:
-    // await addDoc(collection(db, "treinos"), { ...dados });
+    window.firebase = {
+      db,
+      doc,
+      setDoc,
+      deleteDoc,
+      serverTimestamp
+    };
   </script>
 
   <script>
@@ -267,9 +271,97 @@
   let flechasScore = [];
   let historicoLocal = {};
   let tipoAlvoSelecionado = 'Alvo Unitário';
-// Variáveis que controlam o limite do app (começam em 6 por padrão)
-  let maxFlechas = 6; 
-let maxSeries = 6;
+  // Variáveis que controlam o limite do app (começam em 6 por padrão)
+  let maxFlechas = 6;
+  let maxSeries = 6;
+
+  function getTreinoDocId() {
+    const idTreino = document.getElementById('idTreino').value.trim();
+    const tempo = document.getElementById('tempo').value;
+    const serie = document.getElementById('serie').value;
+    return `${idTreino}-${tempo}-S${serie}`;
+  }
+
+  function getTreinoDocRef(docId) {
+    return window.firebase.doc(window.firebase.db, 'treinos', docId);
+  }
+
+  async function salvarTreinoNoFirebase(pacote) {
+    const treinoId = getTreinoDocId();
+    const tipoAlvo = tipoAlvoSelecionado || obterTipoAlvoAtivo();
+
+    const treinoDados = {
+      idTreino: document.getElementById('idTreino').value.trim(),
+      dataTreino: document.getElementById('dataTreino').value,
+      atleta: document.getElementById('atleta').value.trim(),
+      tempo: document.getElementById('tempo').value,
+      serie: document.getElementById('serie').value,
+      serieGlobal: document.getElementById('tempo').value === 'T1' ? parseInt(document.getElementById('serie').value) : parseInt(document.getElementById('serie').value) + 6,
+      v_vento: document.getElementById('v_vento').value || '0',
+      d_vento: document.getElementById('d_vento').value,
+      clima: document.getElementById('clima').value,
+      tipo_alvo: tipoAlvo,
+      tipoAlvo: tipoAlvo,
+      createdAt: window.firebase.serverTimestamp()
+    };
+
+    await window.firebase.setDoc(getTreinoDocRef(treinoId), treinoDados);
+
+    const promessas = pacote.map((disparo) => {
+      const disparoRef = window.firebase.doc(window.firebase.db, 'treinos', treinoId, 'disparos', `F${disparo.flecha}`);
+      return window.firebase.setDoc(disparoRef, {
+        idDisparo: disparo.idDisparo,
+        flecha: disparo.flecha,
+        x: parseFloat(disparo.x.toString().replace(',', '.')),
+        y: parseFloat(disparo.y.toString().replace(',', '.')),
+        v_vento: disparo.v_vento,
+        d_vento: disparo.d_vento,
+        clima: disparo.clima,
+        tipo_alvo: disparo.tipo_alvo,
+        tipoAlvo: disparo.tipoAlvo
+      });
+    });
+
+    await Promise.all(promessas);
+    return `Treino ${treinoId} salvo no Firebase.`;
+  }
+
+  async function salvarScoreNoFirebase(pacoteScore) {
+    const treinoId = getTreinoDocId();
+    const tipoAlvo = pacoteScore.tipoAlvo || 'Alvo Unitário';
+
+    await window.firebase.setDoc(getTreinoDocRef(treinoId), {
+      distancia: pacoteScore.distancia,
+      flechasString: pacoteScore.flechasString,
+      total: pacoteScore.total,
+      clima: pacoteScore.clima,
+      v_vento: pacoteScore.v_vento,
+      d_vento: pacoteScore.d_vento,
+      tipo_alvo: tipoAlvo,
+      tipoAlvo: tipoAlvo,
+      updatedAt: window.firebase.serverTimestamp()
+    }, { merge: true });
+
+    return `Pontuação da série salva no Firebase.`;
+  }
+
+  async function excluirTreinoDoFirebase(chave) {
+    const registro = historicoLocal[chave];
+    const idTreino = registro?.idTreino || document.getElementById('idTreino').value.trim();
+    if (!idTreino) {
+      throw new Error('ID do treino não foi encontrado para exclusão.');
+    }
+
+    const treinoId = `${idTreino}-${chave}`;
+    const disparos = registro?.alvo || [];
+    const promessas = disparos.map((_, index) => {
+      const disparoRef = window.firebase.doc(window.firebase.db, 'treinos', treinoId, 'disparos', `F${index + 1}`);
+      return window.firebase.deleteDoc(disparoRef);
+    });
+    promessas.push(window.firebase.deleteDoc(getTreinoDocRef(treinoId)));
+    await Promise.all(promessas);
+    return `Série ${chave} excluída do Firebase.`;
+  }
 
 // Função que lê o que o atleta digitou e tranca as regras do treino
 function atualizarRegrasFormato() {
@@ -860,7 +952,7 @@ canvas.addEventListener('touchstart', (e) => {
     }
   }
 
-  function enviarAlvo() {
+async function enviarAlvo() {
     if (!validarAtleta()) return;
 
     if (flechas.length !== maxFlechas) {
@@ -869,7 +961,7 @@ canvas.addEventListener('touchstart', (e) => {
     }
 
     document.getElementById('btnEnviarAlvo').disabled = true;
-    document.getElementById('status').innerText = "Salvando Alvo na Planilha...";
+    document.getElementById('status').innerText = "Salvando Alvo no Firebase...";
 
     const idT = document.getElementById('idTreino').value;
     const t = document.getElementById('tempo').value;
@@ -905,16 +997,22 @@ canvas.addEventListener('touchstart', (e) => {
 
     console.log('Dados indo para o Excel:', pacote);
 
-    google.script.run.withSuccessHandler((res) => {
+    try {
+      const res = await salvarTreinoNoFirebase(pacote);
       document.getElementById('status').innerText = res + " Agora insira a pontuação.";
       document.getElementById('btnEnviarAlvo').disabled = false;
       document.getElementById('moduloAlvo').style.display = 'none';
       document.getElementById('moduloScore').style.display = 'block';
       limparLocal('score');
-    }).salvarDados(pacote);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar no Firebase: ' + err.message);
+      document.getElementById('btnEnviarAlvo').disabled = false;
+      document.getElementById('status').innerText = 'Erro ao salvar no Firebase.';
+    }
   }
 
-  function enviarScore() {
+  async function enviarScore() {
     if (!validarAtleta()) return;
 
     if (flechasScore.length !== maxFlechas) {
@@ -959,10 +1057,12 @@ canvas.addEventListener('touchstart', (e) => {
       pacoteScore.tipo_alvo = pacoteScore.tipoAlvo;
     }
 
-    console.log('Dados indo para o Excel:', pacoteScore);
+    console.log('Dados indo para o Firebase:', pacoteScore);
 
-    google.script.run.withSuccessHandler((res) => {
+    try {
+      const res = await salvarScoreNoFirebase(pacoteScore);
       historicoLocal[chave] = {
+        idTreino: document.getElementById('idTreino').value.trim(),
         alvo: [...flechas],
         score: [...flechasScore]
       };
@@ -973,8 +1073,12 @@ canvas.addEventListener('touchstart', (e) => {
       document.getElementById('btnEnviarScore').disabled = false;
 
       avancarProximaSerie();
-
-    }).salvarScorecard(pacoteScore);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar o score no Firebase: ' + err.message);
+      document.getElementById('btnEnviarScore').disabled = false;
+      document.getElementById('status').innerText = 'Erro ao salvar o score no Firebase.';
+    }
   }
 
   function atualizarListaLateral() {
@@ -990,20 +1094,22 @@ canvas.addEventListener('touchstart', (e) => {
     });
   }
 
-  function excluirTotal(chave) {
-    if (!confirm("Excluir esta série inteira, alvo e pontos, da planilha?")) return;
+  async function excluirTotal(chave) {
+    if (!confirm("Excluir esta série inteira do Firebase?")) return;
 
-    const partes = chave.split('-S');
-    const idT = document.getElementById('idTreino').value;
+    document.getElementById('status').innerText = "Deletando do Firebase...";
 
-    document.getElementById('status').innerText = "Deletando da Planilha...";
-
-    google.script.run.withSuccessHandler((res) => {
+    try {
+      const res = await excluirTreinoDoFirebase(chave);
       delete historicoLocal[chave];
       atualizarListaLateral();
       alert(res);
       document.getElementById('status').innerText = "";
-    }).excluirSeriePlanilha(idT, partes[0], partes[1]);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao excluir do Firebase: ' + err.message);
+      document.getElementById('status').innerText = "Erro ao excluir do Firebase.";
+    }
   }
 </script>
 </body>

@@ -2,6 +2,8 @@
 config.js
 .env
 .env.*
+chave-firebase.json
+dados_para_powerbi.csv
 
 # Google Apps Script (opcional, se quiser)
 node_modules/
