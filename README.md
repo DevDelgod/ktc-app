@@ -1,23 +1,36 @@
-# 🎯 Kafu Tiro Certo - Performance App
+🎯 Kafu Tiro Certo - Performance App
+Este repositório contém o código-fonte do ecossistema de dados da Kafu Tiro Certo, projetado para transformar a coleta de dados de campo em inteligência esportiva de alto nível.
 
-Este repositório contém o código-fonte do aplicativo oficial da **Kafu Tiro Certo**, focado em elevar o nível técnico de arqueiros através da coleta de dados em tempo real e análise biomecânica.
+🚀 Funcionalidades Atuais
+Renderização de Alta Precisão: Alvos oficiais renderizados via HTML5 Canvas, permitindo a marcação exata das coordenadas X e Y de cada impacto.
 
-## 🚀 Funcionalidades Atuais
-- **Renderização Dinâmica:** Alvos oficiais (70m, Indoor Unitário e Triplo) renderizados via HTML5 Canvas com precisão milimétrica.
-- **Coleta de Dados:** Interface otimizada para marcação rápida de séries e flechas durante o treino.
-- **Sincronização Nuvem:** Integração robusta com Microsoft Graph API para armazenamento em Excel Online.
-- **Segurança:** Gestão de credenciais via `PropertiesService` do Google Apps Script.
+Banco de Dados em Tempo Real: Sincronização instantânea com Firebase Firestore, garantindo latência quase zero no salvamento de séries.
 
-## 🛠️ Stack Técnica
-- **Front-end:** HTML5, CSS3 e JavaScript (Vanilla).
-- **Backend/Automação:** Google Apps Script (GAS).
-- **Integrações:** Microsoft Azure (App Registration) & Microsoft Graph API.
-- **Visualização de Dados:** Dashboards em Power BI.
+Arquitetura Hierárquica: Organização de dados em estrutura Pai-Filho (Sessões > Disparos), otimizando o consumo de dados e a performance do app.
 
-## 🗺️ Roadmap de Desenvolvimento
-- [ ] Implementação de Soft Delete para registros.
-- [ ] Migração do armazenamento para banco de dados relacional (Supabase/PostgreSQL).
-- [ ] Módulo de análise de vídeo para biomecânica básica.
+ETL Automatizado: Script em Python para extração e tratamento de dados NoSQL, convertendo-os em tabelas relacionais prontas para análise.
 
----
-*Propriedade intelectual de Gabriel Delgado Ribeiro - Kafu Tiro Certo © 2026*
+🛠️ Stack Técnica
+Front-end: HTML5, CSS3 e JavaScript (ES6+).
+
+Banco de Dados: Firebase Firestore (NoSQL).
+
+Integração & ETL: Python (Pandas & Firebase-Admin).
+
+Visualização: Power BI (Dashboards de agrupamento e consistência).
+
+Controle de Versão: Git & GitHub.
+
+🏗️ Estrutura do Banco (Firestore)
+treinos/ (Coleção Pai): Armazena metadados da sessão (Atleta, Clima, Distância, Data).
+
+disparos/ (Subcoleção Filho): Armazena as coordenadas cartesianas e pontuações de cada flecha individual.
+
+🗺️ Roadmap de Desenvolvimento
+[ ] Refatoração Modular: Separação completa de HTML, CSS e Lógica JS para melhor manutenção.
+
+[ ] Modo Offline: Implementação de cache local para treinos em locais sem conectividade.
+
+[ ] Dashboard Avançado: Integração direta via Python para cálculo automático de agrupamento (desvio padrão) no Power BI.
+
+Propriedade intelectual de Gabriel Delgado Ribeiro - Kafu Tiro Certo © 2026
