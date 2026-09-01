@@ -1,0 +1,361 @@
+/**
+ * Tela de registro de treino.
+ *
+ * Layout e comportamento preservados do aplicativo original, incluindo
+ * o breakpoint de 650px que fixa os botões de envio no rodapé em
+ * celular. As regras que estavam mortas no CSS antigo (`.score-box`,
+ * `.score-display`, `.status-banner`) foram removidas, e as caixas de
+ * pontuação — que o JavaScript estilizava inline com cores fixas e por
+ * isso ignoravam o modo escuro — agora usam os tokens do tema.
+ */
+
+.app-grid {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.main-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.side-history {
+  width: 130px;
+  background: var(--bg-body);
+  padding: 10px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+}
+
+/* ---------- formulário ---------- */
+
+#setup-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+}
+
+.campo-duplo {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.campo-duplo > div {
+  flex: 1;
+  text-align: left;
+}
+
+.campo-duplo label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-bottom: 4px;
+}
+
+.campo-duplo input {
+  width: 100%;
+}
+
+.campo-invalido {
+  border: 2px solid var(--vermelho) !important;
+}
+
+.btn-start {
+  width: 100%;
+  padding: 15px;
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  border-radius: var(--raio-item);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* ---------- treino em andamento ---------- */
+
+.training-header {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 12px;
+  border-radius: 15px;
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.training-header span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 33%;
+}
+
+#training-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 15px 0 0;
+  border: 2px dashed var(--azul);
+  border-radius: 18px;
+  margin-top: 10px;
+}
+
+.zoom-controll {
+  margin: 10px 0;
+  background: var(--bg-body);
+  padding: 12px;
+  border-radius: var(--raio-item);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+
+#zoomRange {
+  width: 85%;
+  accent-color: var(--azul);
+}
+
+.canvas-container {
+  border: 2px solid var(--border);
+  border-radius: 15px;
+  background: #fff;
+  margin: 10px 0;
+  overflow: hidden;
+  touch-action: pan-x pan-y;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#alvo {
+  cursor: crosshair;
+  display: block;
+  margin: 0 auto;
+  touch-action: none;
+  width: 100%;
+  max-width: 400px;
+  /* aspect-ratio sozinho mantém o elemento quadrado. O `min-height`
+     do CSS original brigava com ele e deixava o alvo descentralizado
+     na vertical em telas estreitas. */
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border: 1px solid var(--azul);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.btn-desfazer,
+.btn-limpar {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.btn-desfazer {
+  background: var(--vermelho);
+}
+
+.btn-limpar {
+  background: var(--laranja);
+}
+
+.contador {
+  font-weight: bold;
+  margin: 6px 0;
+}
+
+/* ---------- pontuação ---------- */
+
+.caixas-pontuacao {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.ponto-box {
+  min-width: 38px;
+  padding: 10px 6px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-weight: bold;
+  text-align: center;
+  position: relative;
+}
+
+.ponto-box.preenchido {
+  border-color: var(--azul);
+}
+
+/* Divergência entre o ponto digitado e o anel onde a flecha foi
+   marcada. É só um aviso — o valor digitado nunca é alterado. */
+.ponto-box.divergente {
+  border-color: var(--laranja);
+}
+
+.ponto-box .sugestao {
+  display: block;
+  font-size: 9px;
+  font-weight: normal;
+  color: var(--laranja);
+  margin-top: 2px;
+}
+
+.score-total {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--verde);
+  margin: 10px 0;
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.num-btn {
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.num-btn.amarelo { background: var(--anel-ouro); color: #000; }
+.num-btn.vermelho { background: var(--anel-vermelho); color: #fff; }
+.num-btn.azul { background: var(--anel-azul); color: #fff; }
+.num-btn.preto { background: var(--anel-preto); color: #fff; }
+.num-btn.branco { background: var(--anel-branco); color: #000; }
+.num-btn.miss { background: #95a5a6; color: #fff; }
+
+.btn-enviar-alvo,
+.btn-enviar-score {
+  padding: 15px;
+  color: #fff;
+  border: none;
+  border-radius: var(--raio-item);
+  width: 100%;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.btn-enviar-alvo { background: var(--azul); }
+.btn-enviar-score { background: var(--verde); }
+
+.btn-enviar-alvo:disabled,
+.btn-enviar-score:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ---------- histórico lateral ---------- */
+
+.serie-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 5px;
+}
+
+.btn-revisar {
+  flex: 1;
+  padding: 8px;
+  font-size: 11px;
+  border-radius: 8px;
+  border: none;
+  background: var(--azul-claro);
+  color: #fff;
+  font-weight: bold;
+}
+
+.btn-del-mini {
+  background: var(--vermelho);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 10px;
+}
+
+.historico-vazio {
+  font-size: 11px;
+  color: var(--text-sub);
+  line-height: 1.5;
+}
+
+#status {
+  font-size: 12px;
+  color: var(--azul);
+  margin-top: 10px;
+  min-height: 18px;
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 650px) {
+  .training-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 -15px 10px;
+    border-radius: 0;
+  }
+
+  .container {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  body {
+    padding-bottom: 90px;
+  }
+
+  .btn-enviar-alvo,
+  .btn-enviar-score {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    z-index: 40;
+  }
+
+  .side-history {
+    width: 100%;
+  }
+}

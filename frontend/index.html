@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kafu Tiro Certo</title>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <meta name="apple-mobile-web-app-title" content="Kafu Tiro Certo">
+  <meta name="application-name" content="Kafu Tiro Certo">
+  <meta name="theme-color" content="#f39c12">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+
+<div class="container">
+  <header class="header-app">
+    <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-img" alt="Kafu Tiro Certo">
+    <div class="acoes-header">
+      <span id="usuarioLogado" class="usuario-logado"></span>
+      <a class="btn-nav" href="./dashboard.html">📊 Análise</a>
+      <a class="btn-nav" href="./competitions.html">🏆 Competições</a>
+      <button type="button" class="btn-icone" id="btnTema" title="Alternar tema" aria-label="Alternar tema claro e escuro">🌓</button>
+      <button type="button" class="btn-icone" id="btnSair" title="Sair" aria-label="Sair da conta">🚪</button>
+    </div>
+  </header>
+
+  <div id="mini-header" class="training-header oculto">
+    <span id="headerIdTreino">ID: --</span>
+    <span id="headerAtleta">Atleta: --</span>
+    <span id="headerDataTreino">Data: --</span>
+  </div>
+
+  <div class="app-grid">
+    <div class="main-section">
+      <h2 class="section-title">Sessão e Ambiente</h2>
+
+      <section id="setup-container">
+        <div class="form-group">
+          <input type="text" id="idTreino" placeholder="ID do Treino" autocomplete="off">
+          <input type="text" id="atleta" placeholder="Atleta" autocomplete="name">
+          <input type="date" id="dataTreino">
+
+          <select id="tempo" aria-label="Tempo da rodada">
+            <option value="T1">T1</option>
+            <option value="T2">T2</option>
+          </select>
+
+          <select id="serie" aria-label="Série inicial">
+            <option value="1">Série 1</option>
+            <option value="2">Série 2</option>
+            <option value="3">Série 3</option>
+            <option value="4">Série 4</option>
+            <option value="5">Série 5</option>
+            <option value="6">Série 6</option>
+          </select>
+
+          <select id="clima" aria-label="Clima">
+            <option value="Sol">Sol</option>
+            <option value="Sol Extremo">Sol Extremo</option>
+            <option value="Nublado">Nublado</option>
+            <option value="Chuva">Chuva</option>
+            <option value="Chuva Intensa">Chuva Intensa</option>
+          </select>
+
+          <select id="distancia" aria-label="Distância">
+            <option value="18m">18m</option>
+            <option value="30m">30m</option>
+            <option value="50m">50m</option>
+            <option value="70m" selected>70m</option>
+          </select>
+
+          <select id="tipoAlvo" class="oculto" aria-label="Tipo de alvo">
+            <option value="indoor_18_single">Alvo Único</option>
+            <option value="indoor_18_triplo">Alvo Triplo</option>
+          </select>
+
+          <div class="campo-duplo">
+            <div>
+              <label for="qtdSeries">Séries por rodada</label>
+              <input type="number" id="qtdSeries" value="6" min="1" max="20" required>
+            </div>
+            <div>
+              <label for="qtdFlechas">Flechas por série</label>
+              <input type="number" id="qtdFlechas" value="6" min="1" max="15" required>
+            </div>
+          </div>
+
+          <input type="number" id="v_vento" placeholder="Vento Km/h" min="0">
+
+          <select id="d_vento" aria-label="Direção do vento">
+            <option value="Norte">Norte</option>
+            <option value="Sul">Sul</option>
+            <option value="Leste">Leste</option>
+            <option value="Oeste">Oeste</option>
+            <option value="Nordeste">Nordeste</option>
+            <option value="Noroeste">Noroeste</option>
+            <option value="Sudeste">Sudeste</option>
+            <option value="Sudoeste">Sudoeste</option>
+          </select>
+        </div>
+
+        <button id="btnStartTraining" class="btn-start" type="button">COMEÇAR</button>
+      </section>
+
+      <section id="training-container" class="oculto">
+        <div id="moduloAlvo">
+          <div class="zoom-controll">
+            <input type="range" id="zoomRange" min="300" max="1200" value="500" aria-label="Zoom do alvo">
+          </div>
+
+          <div class="canvas-container">
+            <canvas id="alvo" width="400" height="400"></canvas>
+          </div>
+
+          <div class="controls">
+            <button type="button" class="btn-desfazer" id="btnDesfazerAlvo">↩ DESFAZER</button>
+            <button type="button" class="btn-limpar" id="btnLimparAlvo">🗑️ LIMPAR</button>
+          </div>
+
+          <p class="contador" id="contadorAlvo">Flechas no Alvo: 0 / 6</p>
+          <button id="btnEnviarAlvo" class="btn-enviar-alvo oculto" type="button">1. CONFIRMAR ALVO</button>
+        </div>
+
+        <div id="moduloScore" class="oculto">
+          <h3>Pontuação da Série</h3>
+          <div id="containerFlechasScore" class="caixas-pontuacao"></div>
+          <div class="score-total" id="scoreTotal">Total: 0</div>
+
+          <div class="numpad" id="numpad"></div>
+
+          <div class="controls">
+            <button type="button" class="btn-desfazer" id="btnDesfazerScore">↩ APAGAR</button>
+            <button type="button" class="btn-limpar" id="btnLimparScore">🗑️ LIMPAR TUDO</button>
+          </div>
+
+          <p class="contador" id="contadorScore">Pontos Inseridos: 0 / 6</p>
+          <button id="btnEnviarScore" class="btn-enviar-score oculto" type="button">2. FINALIZAR SÉRIE</button>
+        </div>
+      </section>
+
+      <p id="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <aside class="side-history">
+      <h2 class="section-title" style="text-align:center">Enviadas</h2>
+      <div id="listaSeries"></div>
+    </aside>
+  </div>
+
+  <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
+</div>
+
+<script type="module" src="./js/registro.js"></script>
+</body>
+</html>

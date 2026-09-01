@@ -1,0 +1,93 @@
+/**
+ * Tela de login — usa os tokens de base.css para parecer parte do
+ * mesmo aplicativo, não uma página de terceiros.
+ */
+
+.tela-login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.cartao-login {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-card);
+  border-radius: var(--raio-card);
+  box-shadow: var(--sombra);
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.logo-login {
+  max-height: 80px;
+  margin-bottom: 8px;
+}
+
+body.dark-mode .logo-login {
+  filter: invert(1);
+}
+
+.subtitulo-login {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin: 0 0 22px;
+  line-height: 1.5;
+}
+
+.campo-login {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.campo-login label {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin-bottom: 5px;
+}
+
+.campo-login input {
+  width: 100%;
+}
+
+.erro-login {
+  background: rgba(231, 76, 60, 0.12);
+  color: var(--vermelho);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  text-align: left;
+  line-height: 1.5;
+  margin: 4px 0 16px;
+}
+
+.btn-entrar {
+  width: 100%;
+  padding: 14px;
+  background: var(--azul);
+  color: #fff;
+  border: none;
+  border-radius: var(--raio-item);
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+}
+
+.btn-entrar:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.rodape-login {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.7;
+}

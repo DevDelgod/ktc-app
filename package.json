@@ -1,5 +1,14 @@
 {
-  "dependencies": {
-    "firebase": "^12.12.1"
-  }
+  "name": "ktc-app",
+  "version": "2.0.0",
+  "description": "Kafu Tiro Certo — registro de treinos de tiro com arco e plataforma de análise de performance.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python backend/tools/servidor_demo.py",
+    "backend": "cd backend && uvicorn app.main:app --reload --port 8000",
+    "test": "cd backend && pytest -q"
+  },
+  "keywords": ["tiro-com-arco", "analytics", "firestore"],
+  "license": "UNLICENSED"
 }

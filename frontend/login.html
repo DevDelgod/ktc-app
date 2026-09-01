@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — Kafu Tiro Certo</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <meta name="theme-color" content="#f39c12">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/login.css">
+</head>
+<body>
+
+<div class="tela-login">
+  <div class="cartao-login">
+    <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-login" alt="Kafu Tiro Certo">
+    <p class="subtitulo-login">Entre para registrar treinos e ver sua performance.</p>
+
+    <form id="formLogin" novalidate>
+      <div class="campo-login">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" autocomplete="username" required>
+      </div>
+      <div class="campo-login">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" autocomplete="current-password" required>
+      </div>
+
+      <p id="erroLogin" class="erro-login oculto" role="alert"></p>
+
+      <button type="submit" id="btnEntrar" class="btn-entrar">ENTRAR</button>
+    </form>
+  </div>
+
+  <p class="rodape-login">© 2026 KafuTiroCerto. Todos os direitos reservados.</p>
+</div>
+
+<script type="module" src="./js/login.js"></script>
+</body>
+</html>

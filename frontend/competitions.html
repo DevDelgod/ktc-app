@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Competições — Kafu Tiro Certo</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <meta name="theme-color" content="#f39c12">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/competitions.css">
+</head>
+<body>
+
+<div class="container-wide">
+  <header class="header-app">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-img" alt="Kafu Tiro Certo">
+      <h1 class="titulo-pagina">Competições</h1>
+    </div>
+    <div class="acoes-header">
+      <span id="usuarioLogado" class="usuario-logado"></span>
+      <a class="btn-nav" href="./index.html">🎯 Registrar treino</a>
+      <a class="btn-nav" href="./dashboard.html">📊 Análise</a>
+      <button type="button" class="btn-icone" id="btnTema" title="Alternar tema" aria-label="Alternar tema">🌓</button>
+      <button type="button" class="btn-icone" id="btnSair" title="Sair" aria-label="Sair da conta">🚪</button>
+    </div>
+  </header>
+
+  <div id="avisoConexao" class="aviso aviso-erro oculto" role="alert"></div>
+
+  <div id="listaCarregando" class="carregando">Carregando competições…</div>
+
+  <div id="conteudo" class="oculto">
+    <button type="button" class="btn-start" id="btnNovaCompeticao" style="margin-bottom:18px">
+      + Nova competição
+    </button>
+
+    <form id="formNovaCompeticao" class="form-competicao oculto">
+      <div>
+        <label for="fcNome">Nome da competição</label>
+        <input type="text" id="fcNome" placeholder="Ex.: Campeonato Brasileiro" required>
+      </div>
+      <div>
+        <label for="fcAtleta">Atleta</label>
+        <input type="text" id="fcAtleta" placeholder="Nome do atleta" required>
+      </div>
+      <div>
+        <label for="fcData">Data</label>
+        <input type="date" id="fcData" required>
+      </div>
+      <div>
+        <label for="fcLocal">Local</label>
+        <input type="text" id="fcLocal" placeholder="Cidade, clube...">
+      </div>
+      <div>
+        <label for="fcCategoria">Categoria</label>
+        <input type="text" id="fcCategoria" placeholder="Ex.: Recurvo Adulto">
+      </div>
+      <div>
+        <label for="fcModalidade">Modalidade</label>
+        <input type="text" id="fcModalidade" placeholder="Ex.: Outdoor 70m">
+      </div>
+      <div>
+        <label for="fcDistancia">Distância</label>
+        <select id="fcDistancia">
+          <option value="18m">18m</option>
+          <option value="30m">30m</option>
+          <option value="50m">50m</option>
+          <option value="70m" selected>70m</option>
+        </select>
+      </div>
+      <div>
+        <label for="fcTipoAlvo">Tipo de alvo</label>
+        <select id="fcTipoAlvo">
+          <option value="Alvo Unitário" selected>Alvo padrão</option>
+          <option value="Alvo Triplo">Alvo triplo (18m)</option>
+        </select>
+      </div>
+      <div class="campo-largo" style="display:flex; gap:10px;">
+        <button type="submit" class="btn-start" id="btnCriarCompeticao" style="flex:1">Criar competição</button>
+        <button type="button" class="btn-nav" id="btnCancelarNova">Cancelar</button>
+      </div>
+    </form>
+
+    <div id="listaCompeticoes" class="lista-competicoes"></div>
+    <p id="listaVazia" class="aviso oculto">Nenhuma competição criada ainda.</p>
+  </div>
+
+  <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
+</div>
+
+<script type="module" src="./js/competitions.js"></script>
+</body>
+</html>

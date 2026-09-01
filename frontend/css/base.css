@@ -1,0 +1,218 @@
+/**
+ * Identidade visual do KTC — tokens e elementos compartilhados.
+ *
+ * As cores, a tipografia e o modo escuro são os do aplicativo original.
+ * O que mudou é a organização: os tokens ficam num arquivo só, e o
+ * registro e o dashboard bebem da mesma fonte, de modo que as duas
+ * telas parecem o mesmo produto.
+ */
+
+:root {
+  /* Superfícies e texto — valores do style.css original. */
+  --bg-body: #f0f2f5;
+  --bg-card: #ffffff;
+  --bg-inset: #f6f7f9;
+  --text-main: #1c1e21;
+  --text-sub: #555555;
+  --border: #dddddd;
+  --input-bg: #ffffff;
+
+  /* Cores de ação do aplicativo. */
+  --azul: #2980b9;
+  --azul-claro: #3498db;
+  --laranja: #f39c12;
+  --verde: #27ae60;
+  --vermelho: #e74c3c;
+
+  /* Cores dos anéis do alvo — usadas nos gráficos para que a
+     visualização fale a mesma língua do alvo real. */
+  --anel-ouro: #f1c40f;
+  --anel-vermelho: #e74c3c;
+  --anel-azul: #3498db;
+  --anel-preto: #2c3e50;
+  --anel-branco: #ecf0f1;
+
+  --raio-card: 20px;
+  --raio-item: 12px;
+  --sombra: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --fonte: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --fonte-num: 'Segoe UI', system-ui, sans-serif;
+}
+
+body.dark-mode {
+  --bg-body: #18191a;
+  --bg-card: #242526;
+  --bg-inset: #1c1d1e;
+  --text-main: #e4e6eb;
+  --text-sub: #b0b3b8;
+  --border: #3e4042;
+  --input-bg: #3a3b3c;
+  --sombra: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--fonte);
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  margin: 0;
+  padding: 10px;
+  text-align: center;
+}
+
+button {
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--azul);
+  outline-offset: 2px;
+}
+
+input,
+select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* ---------- estrutura ---------- */
+
+.container {
+  max-width: 550px;
+  margin: 10px auto;
+  background: var(--bg-card);
+  padding: 15px;
+  border-radius: var(--raio-card);
+  box-shadow: var(--sombra);
+  display: flex;
+  flex-direction: column;
+}
+
+.header-app {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.logo-img {
+  max-height: 90px;
+}
+
+body.dark-mode .logo-img {
+  filter: invert(1);
+}
+
+.acoes-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usuario-logado {
+  font-size: 11px;
+  color: var(--text-sub);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .usuario-logado {
+    display: none;
+  }
+}
+
+.btn-icone {
+  border: 1px solid var(--border);
+  background: var(--bg-inset);
+  color: var(--text-main);
+  font-size: 18px;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.btn-icone:hover {
+  border-color: var(--azul);
+}
+
+.btn-nav {
+  border: 1px solid var(--border);
+  background: var(--bg-inset);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 9px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-nav:hover {
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  margin: 0 0 5px;
+  text-align: left;
+  letter-spacing: 1px;
+}
+
+.footer-app {
+  margin-top: 20px;
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+/* ---------- estados ---------- */
+
+.aviso {
+  border-radius: var(--raio-item);
+  padding: 14px 16px;
+  font-size: 13px;
+  text-align: left;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  background: var(--bg-inset);
+  color: var(--text-sub);
+}
+
+.aviso-erro {
+  border-color: var(--vermelho);
+  color: var(--vermelho);
+}
+
+.aviso strong {
+  color: var(--text-main);
+}
+
+.oculto {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

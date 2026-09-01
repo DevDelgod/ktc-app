@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Competição — Kafu Tiro Certo</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <meta name="theme-color" content="#f39c12">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/app.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/competitions.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+<div class="container-wide">
+  <header class="header-app">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-img" alt="Kafu Tiro Certo">
+      <h1 class="titulo-pagina">Competição</h1>
+    </div>
+    <div class="acoes-header">
+      <span id="usuarioLogado" class="usuario-logado"></span>
+      <a class="btn-nav" href="./competitions.html">🏆 Competições</a>
+      <button type="button" class="btn-icone" id="btnTema" title="Alternar tema" aria-label="Alternar tema">🌓</button>
+      <button type="button" class="btn-icone" id="btnSair" title="Sair" aria-label="Sair da conta">🚪</button>
+    </div>
+  </header>
+
+  <div id="avisoConexao" class="aviso aviso-erro oculto" role="alert"></div>
+  <div id="carregando" class="carregando">Carregando competição…</div>
+  <div id="naoEncontrada" class="aviso oculto">
+    Competição não encontrada. <a href="./competitions.html">Voltar para a lista</a>.
+  </div>
+
+  <div id="conteudo" class="oculto">
+    <div class="painel-competicao">
+      <div class="cabecalho-competicao">
+        <div>
+          <span class="selo-status" id="seloStatus"></span>
+          <h2 id="tituloCompeticao" style="margin:4px 0 2px"></h2>
+          <p id="metaCompeticao" style="margin:0; font-size:12px; color:var(--text-sub)"></p>
+        </div>
+        <div class="controles-status" id="controlesStatus"></div>
+      </div>
+    </div>
+
+    <nav class="abas" role="tablist">
+      <button type="button" class="aba ativa" data-aba="registrar" id="abaRegistrar">Registrar</button>
+      <button type="button" class="aba" data-aba="relatorio">Relatório</button>
+    </nav>
+
+    <!-- ===================== ABA REGISTRAR ===================== -->
+    <section id="painel-registrar" role="tabpanel">
+      <div class="painel-competicao">
+        <p class="legenda" style="margin:0 0 12px">
+          Estrutura fixa da competição: <strong>12 séries de 6 flechas</strong> (72 no total).
+          A série avança sozinha; ao completar a 12ª, o relatório é gerado automaticamente.
+        </p>
+
+        <div class="acompanhamento">
+          <div class="acompanhamento-item">
+            <div class="acompanhamento-rotulo">Prova</div>
+            <div class="acompanhamento-valor" id="acProva" style="font-size:13px">Classificação</div>
+          </div>
+          <div class="acompanhamento-item">
+            <div class="acompanhamento-rotulo">Série</div>
+            <div class="acompanhamento-valor" id="acSerie">— / 12</div>
+          </div>
+          <div class="acompanhamento-item">
+            <div class="acompanhamento-rotulo">Flecha</div>
+            <div class="acompanhamento-valor" id="acFlecha">0 / 6</div>
+          </div>
+          <div class="acompanhamento-item">
+            <div class="acompanhamento-rotulo">Score da série</div>
+            <div class="acompanhamento-valor" id="acScoreSerie">0</div>
+          </div>
+          <div class="acompanhamento-item">
+            <div class="acompanhamento-rotulo">Score total</div>
+            <div class="acompanhamento-valor" id="acScoreTotal">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-grid">
+        <div class="main-section">
+          <div id="moduloAlvo">
+            <div class="zoom-controll">
+              <input type="range" id="zoomRange" min="300" max="1200" value="500" aria-label="Zoom do alvo">
+            </div>
+            <div class="canvas-container">
+              <canvas id="alvo" width="400" height="400"></canvas>
+            </div>
+            <div class="controls">
+              <button type="button" class="btn-desfazer" id="btnDesfazerAlvo">↩ DESFAZER</button>
+              <button type="button" class="btn-limpar" id="btnLimparAlvo">🗑️ LIMPAR</button>
+            </div>
+            <p class="contador" id="contadorAlvo">Flechas no Alvo: 0 / 6</p>
+            <button id="btnEnviarAlvo" class="btn-enviar-alvo oculto" type="button">1. CONFIRMAR ALVO</button>
+          </div>
+
+          <div id="moduloScore" class="oculto">
+            <h3>Pontuação da Série</h3>
+            <div id="containerFlechasScore" class="caixas-pontuacao"></div>
+            <div class="score-total" id="scoreTotal">Total: 0</div>
+            <div class="numpad" id="numpad"></div>
+            <div class="controls">
+              <button type="button" class="btn-desfazer" id="btnDesfazerScore">↩ APAGAR</button>
+              <button type="button" class="btn-limpar" id="btnLimparScore">🗑️ LIMPAR TUDO</button>
+            </div>
+            <p class="contador" id="contadorScore">Pontos Inseridos: 0 / 6</p>
+            <button id="btnEnviarScore" class="btn-enviar-score oculto" type="button">2. FINALIZAR SÉRIE</button>
+          </div>
+
+          <p id="status" role="status" aria-live="polite"></p>
+        </div>
+
+        <aside class="side-history">
+          <div class="section-title" style="text-align:center">Séries registradas</div>
+          <div id="listaSeries"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== ABA RELATÓRIO ===================== -->
+    <section id="painel-relatorio" class="oculto" role="tabpanel">
+      <div id="relatorioCarregando" class="carregando">Carregando relatório…</div>
+      <div id="relatorioConteudo" class="oculto">
+
+        <div class="relatorio-titulo">
+          <h1 id="relNome"></h1>
+          <p id="relMeta"></p>
+        </div>
+
+        <div class="kpis" id="relKpisScore"></div>
+
+        <div class="grade grade-2">
+          <div class="painel">
+            <h3>Consistência</h3>
+            <p id="relFraseConsistencia" class="legenda"></p>
+            <div class="kpis" id="relKpisConsistencia"></div>
+          </div>
+          <div class="painel">
+            <h3>Precisão</h3>
+            <div class="kpis" id="relKpisPrecisao"></div>
+          </div>
+        </div>
+
+        <div class="grade grade-alvo">
+          <div class="painel">
+            <h3>Dispersão dos disparos</h3>
+            <div class="alvo-wrapper">
+              <canvas id="relGraficoAlvo" width="440" height="440"></canvas>
+              <div id="relTooltipAlvo" class="tooltip-alvo oculto"></div>
+            </div>
+          </div>
+          <div class="grade">
+            <div class="painel">
+              <h3>Desempenho por série</h3>
+              <div class="area-grafico"><canvas id="relGraficoSeries"></canvas></div>
+            </div>
+            <div class="painel">
+              <h3>Distribuição das pontuações</h3>
+              <div class="area-grafico"><canvas id="relGraficoDistribuicao"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grade grade-2">
+          <div class="painel">
+            <h3>Destaques</h3>
+            <div id="relDestaques"></div>
+          </div>
+          <div class="painel">
+            <h3>Pontos de atenção</h3>
+            <div id="relPontosAtencao"></div>
+          </div>
+        </div>
+
+        <div class="painel oculto" id="painelInicioFim">
+          <h3>Início × Final da prova</h3>
+          <div class="kpis" id="relInicioFim"></div>
+        </div>
+
+        <div class="painel">
+          <h3>Análise final</h3>
+          <p id="relAnaliseFinal" class="frase-analise" style="margin:0"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
+</div>
+
+<script type="module" src="./js/competition.js"></script>
+</body>
+</html>

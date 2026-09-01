@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KTC Performance — Análise</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png">
+  <meta name="theme-color" content="#f39c12">
+
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+
+<div class="container-wide">
+  <header class="header-app">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <img src="https://i.postimg.cc/FHyXLm03/LOGO-PRETA-SEM-FUNDO.png" class="logo-img" alt="Kafu Tiro Certo">
+      <h1 class="titulo-pagina">Performance</h1>
+    </div>
+    <div class="acoes-header">
+      <span id="usuarioLogado" class="usuario-logado"></span>
+      <a class="btn-nav" href="./index.html">🎯 Registrar treino</a>
+      <a class="btn-nav" href="./competitions.html">🏆 Competições</a>
+      <button type="button" class="btn-icone" id="btnAtualizar" title="Recarregar do banco" aria-label="Recarregar dados">↻</button>
+      <button type="button" class="btn-icone" id="btnTema" title="Alternar tema" aria-label="Alternar tema">🌓</button>
+      <button type="button" class="btn-icone" id="btnSair" title="Sair" aria-label="Sair da conta">🚪</button>
+    </div>
+  </header>
+
+  <div id="avisoConexao" class="aviso aviso-erro oculto" role="alert"></div>
+
+  <section class="filtros" id="filtros">
+    <div class="filtro">
+      <label for="fAtleta">Atleta</label>
+      <select id="fAtleta"><option value="">Todos</option></select>
+    </div>
+    <div class="filtro">
+      <label for="fDataInicio">De</label>
+      <input type="date" id="fDataInicio">
+    </div>
+    <div class="filtro">
+      <label for="fDataFim">Até</label>
+      <input type="date" id="fDataFim">
+    </div>
+    <div class="filtro">
+      <label for="fTipoAlvo">Tipo de alvo</label>
+      <select id="fTipoAlvo"><option value="">Todos</option></select>
+    </div>
+    <div class="filtro">
+      <label for="fDistancia">Distância</label>
+      <select id="fDistancia"><option value="">Todas</option></select>
+    </div>
+    <div class="filtro">
+      <label for="fSerie">Série</label>
+      <select id="fSerie"><option value="">Todas</option></select>
+    </div>
+    <div class="filtro">
+      <label for="fTreino">Treino</label>
+      <select id="fTreino"></select>
+    </div>
+  </section>
+
+  <nav class="abas" role="tablist">
+    <button type="button" class="aba ativa" data-aba="treino" role="tab">Treino</button>
+    <button type="button" class="aba" data-aba="historico" role="tab">Evolução</button>
+    <button type="button" class="aba" data-aba="comparacao" role="tab">Comparação</button>
+  </nav>
+
+  <!-- ===================== ABA TREINO ===================== -->
+  <section id="painel-treino" role="tabpanel">
+    <div id="treinoCarregando" class="carregando">Carregando análise…</div>
+
+    <div id="treinoConteudo" class="oculto">
+      <dl class="identificacao" id="identificacao"></dl>
+
+      <div id="kpis"></div>
+      <p id="fraseAnalise" class="frase-analise oculto"></p>
+
+      <div class="grade grade-alvo">
+        <div class="painel">
+          <h3>Dispersão sobre o alvo</h3>
+          <p class="legenda">
+            Cada flecha na face que realmente foi usada. A distância entre a cruz
+            e o losango mostra para que lado o agrupamento está deslocado.
+          </p>
+          <div class="alvo-wrapper">
+            <canvas id="graficoAlvo" width="440" height="440"></canvas>
+            <div id="tooltipAlvo" class="tooltip-alvo oculto"></div>
+          </div>
+          <div class="legenda-alvo">
+            <span><i class="marca marca-flecha"></i> Flecha</span>
+            <span><i class="marca marca-centro"></i> Centro do alvo</span>
+            <span><i class="marca marca-grupo"></i> Centro do grupo</span>
+            <span><i class="marca marca-r95"></i> 95% do grupo</span>
+          </div>
+        </div>
+
+        <div class="grade">
+          <div class="painel">
+            <h3>Score por série</h3>
+            <p class="legenda">Séries em cinza foram registradas no alvo mas não finalizadas.</p>
+            <div class="area-grafico"><canvas id="graficoSeries"></canvas></div>
+          </div>
+          <div class="painel">
+            <h3>Distribuição das pontuações</h3>
+            <p class="legenda">Quantas flechas caíram em cada anel.</p>
+            <div class="area-grafico"><canvas id="graficoDistribuicao"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grade grade-2">
+        <div class="painel">
+          <h3>Consistência entre séries</h3>
+          <p class="legenda">Quanto o desempenho oscila em torno da média do treino.</p>
+          <div class="area-grafico"><canvas id="graficoConsistencia"></canvas></div>
+        </div>
+        <div class="painel">
+          <h3>Distância do centro, flecha a flecha</h3>
+          <p class="legenda">Na ordem em que as flechas foram atiradas. Menor é melhor.</p>
+          <div class="area-grafico"><canvas id="graficoDistancia"></canvas></div>
+        </div>
+      </div>
+
+      <div class="painel">
+        <h3>Séries do treino</h3>
+        <div class="tabela-wrapper">
+          <table id="tabelaSeries">
+            <thead>
+              <tr>
+                <th>Série</th>
+                <th class="num">Flechas</th>
+                <th class="num">Total</th>
+                <th class="num">Média</th>
+                <th class="num">Dist. média (cm)</th>
+                <th class="num">Dispersão (cm)</th>
+                <th>Pontos</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="painel" style="margin-top:14px">
+        <h3>Qualidade do dado</h3>
+        <p class="legenda">
+          Compara a pontuação digitada com o anel onde a flecha foi marcada.
+          Divergência não corrige nada — indica marcação imprecisa, zoom mal
+          ajustado ou digitação trocada.
+        </p>
+        <div id="qualidade"></div>
+      </div>
+    </div>
+
+    <div id="treinoVazio" class="aviso oculto">
+      Nenhum treino corresponde aos filtros selecionados.
+    </div>
+  </section>
+
+  <!-- ==================== ABA HISTÓRICO ==================== -->
+  <section id="painel-historico" class="oculto" role="tabpanel">
+    <div class="kpis" id="kpisHistorico"></div>
+
+    <div class="grade grade-2">
+      <div class="painel">
+        <h3>Evolução do score</h3>
+        <p class="legenda">Total por treino ao longo do tempo.</p>
+        <div class="area-grafico area-grafico-alta"><canvas id="graficoEvolucaoScore"></canvas></div>
+      </div>
+      <div class="painel">
+        <h3>Evolução da média por flecha</h3>
+        <p class="legenda">Independe do número de flechas, então compara treinos de formatos diferentes.</p>
+        <div class="area-grafico area-grafico-alta"><canvas id="graficoEvolucaoMedia"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grade grade-2">
+      <div class="painel">
+        <h3>Evolução da precisão</h3>
+        <p class="legenda">Distância média do centro. Menor é melhor.</p>
+        <div class="area-grafico"><canvas id="graficoEvolucaoPrecisao"></canvas></div>
+      </div>
+      <div class="painel">
+        <h3>Evolução do agrupamento</h3>
+        <p class="legenda">Dispersão radial do grupo. Menor é melhor.</p>
+        <div class="area-grafico"><canvas id="graficoEvolucaoDispersao"></canvas></div>
+      </div>
+    </div>
+
+    <div class="painel">
+      <h3>Treinos</h3>
+      <div class="tabela-wrapper">
+        <table id="tabelaHistorico">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Treino</th>
+              <th>Alvo</th>
+              <th class="num">Séries</th>
+              <th class="num">Flechas</th>
+              <th class="num">Total</th>
+              <th class="num">Média</th>
+              <th class="num">Dist. centro (cm)</th>
+              <th class="num">Dispersão (cm)</th>
+              <th>Tendência</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="historicoVazio" class="aviso oculto">
+      Nenhum treino no período selecionado.
+    </div>
+  </section>
+
+  <!-- =================== ABA COMPARAÇÃO =================== -->
+  <section id="painel-comparacao" class="oculto" role="tabpanel">
+    <div class="painel" style="margin-bottom:14px">
+      <h3>Selecione até 6 treinos</h3>
+      <p class="legenda">Clique para incluir ou remover da comparação.</p>
+      <div class="selecao-comparacao" id="selecaoComparacao"></div>
+    </div>
+
+    <div id="comparacaoConteudo" class="oculto">
+      <div class="painel" style="margin-bottom:14px">
+        <h3>Métricas lado a lado</h3>
+        <p class="legenda">O melhor valor de cada linha aparece destacado.</p>
+        <div class="tabela-wrapper">
+          <table id="tabelaComparacao"><thead></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <div class="grade grade-2">
+        <div class="painel">
+          <h3>Score total</h3>
+          <div class="area-grafico"><canvas id="graficoCompScore"></canvas></div>
+        </div>
+        <div class="painel">
+          <h3>Distância média do centro</h3>
+          <p class="legenda">Menor é melhor.</p>
+          <div class="area-grafico"><canvas id="graficoCompDispersao"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="comparacaoVazia" class="aviso">
+      Selecione ao menos dois treinos para comparar.
+    </div>
+  </section>
+
+  <div class="footer-app">© 2026 KafuTiroCerto. Todos os direitos reservados.</div>
+</div>
+
+<script type="module" src="./js/dashboard.js"></script>
+</body>
+</html>

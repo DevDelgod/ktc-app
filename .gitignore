@@ -1,10 +1,29 @@
-# Ignore local secret config files
-config.js
+# ---- Segredos e configuração local ----
+# Conta de serviço do Firebase Admin (backend). NUNCA versionar.
+chave-firebase.json
+**/chave-firebase.json
 .env
 .env.*
-chave-firebase.json
-dados_para_powerbi.csv
+!.env.example
 
-# Google Apps Script (opcional, se quiser)
+# Configuração do Firebase Web (frontend). Copie o .example.
+frontend/js/firebase-config.js
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# ---- Node ----
 node_modules/
+
+# ---- Artefatos do fluxo antigo (Power BI) ----
+dados_para_powerbi.csv
+*.csv
+
+# ---- Sistema ----
 .DS_Store
+Thumbs.db
